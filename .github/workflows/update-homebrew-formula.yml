@@ -58,19 +58,61 @@ jobs:
       - name: Fetch release checksums
         id: checksums
         env:
-          BASE_URL: ${{ steps.meta.outputs.base_url }}
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          TAG: ${{ steps.meta.outputs.tag }}
           VERSION: ${{ steps.meta.outputs.version }}
         run: |
           set -euo pipefail
 
+          mkdir -p checksums
+
+          expected=(
+            "proteus-v${VERSION}-darwin-arm64.sha256"
+            "proteus-v${VERSION}-darwin-x64.sha256"
+            "proteus-v${VERSION}-linux-arm64.sha256"
+            "proteus-v${VERSION}-linux-x64.sha256"
+          )
+
+          for attempt in 1 2 3 4 5 6; do
+            rm -f checksums/*.sha256 || true
+            gh release download "$TAG" --repo "$REPO" --pattern "proteus-v${VERSION}-*.sha256" --dir checksums || true
+
+            missing=0
+            for name in "${expected[@]}"; do
+              if [ ! -f "checksums/${name}" ]; then
+                missing=1
+                break
+              fi
+            done
+
+            if [ "$missing" -eq 0 ]; then
+              break
+            fi
+
+            if [ "$attempt" -eq 6 ]; then
+              echo "Release assets are incomplete for $TAG"
+              ls -la checksums || true
+              exit 1
+            fi
+
+            sleep 15
+          done
+
           fetch_sha() {
             local arch="$1"
-            local file="proteus-v${VERSION}-${arch}.sha256"
+            local file="checksums/proteus-v${VERSION}-${arch}.sha256"
+
+            if [ ! -f "$file" ]; then
+              echo "Missing checksum file: $file"
+              exit 1
+            fi
+
             local sum
-            sum="$(curl -fsSL "${BASE_URL}/${file}" | awk '{print $1}')"
+            sum="$(awk '{print $1}' "$file")"
 
             if [ -z "$sum" ]; then
-              echo "Missing checksum for ${arch}"
+              echo "Empty checksum for ${arch}"
               exit 1
             fi
 
