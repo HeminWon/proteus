@@ -42,7 +42,7 @@ Proteus 把这件事变成一行命令。
 安装方式：
 
 ```bash
-brew tap HeminWon/proteus
+brew tap HeminWon/proteus https://github.com/HeminWon/proteus
 brew install proteus
 ```
 
