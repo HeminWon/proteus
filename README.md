@@ -58,7 +58,7 @@ brew upgrade proteus
 - 支持平台：macOS (arm64/x64)、Linux (arm64/x64)
 - 发布 tag（`v*`）后会自动更新 Formula 中的 version/url/sha256
 - 若自动更新失败，可在 Actions 手动触发 `update-homebrew-formula`（`workflow_dispatch`）补跑
-- 发布二进制固定使用 Bun `1.3.13+`
+- 发布二进制使用 Bun 稳定版（`latest`）
 
 ### 开发模式
 
