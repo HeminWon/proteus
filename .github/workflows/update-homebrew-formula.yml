@@ -1,0 +1,162 @@
+name: update-homebrew-formula
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to sync (e.g. v1.0.1). Empty means latest release."
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-homebrew-formula-${{ github.event.release.tag_name || github.event.inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  sync-formula:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve release metadata
+        id: meta
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          INPUT_TAG: ${{ github.event.inputs.tag }}
+          EVENT_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          set -euo pipefail
+
+          if [ -n "${INPUT_TAG:-}" ]; then
+            TAG="$INPUT_TAG"
+          elif [ -n "${EVENT_TAG:-}" ]; then
+            TAG="$EVENT_TAG"
+          else
+            TAG="$(gh release view --repo "$REPO" --json tagName --jq '.tagName')"
+          fi
+
+          if [ -z "$TAG" ]; then
+            echo "Unable to resolve release tag"
+            exit 1
+          fi
+
+          VERSION="${TAG#v}"
+          BASE_URL="https://github.com/${REPO}/releases/download/${TAG}"
+
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "base_url=$BASE_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Fetch release checksums
+        id: checksums
+        env:
+          BASE_URL: ${{ steps.meta.outputs.base_url }}
+          VERSION: ${{ steps.meta.outputs.version }}
+        run: |
+          set -euo pipefail
+
+          fetch_sha() {
+            local arch="$1"
+            local file="proteus-v${VERSION}-${arch}.sha256"
+            local sum
+            sum="$(curl -fsSL "${BASE_URL}/${file}" | awk '{print $1}')"
+
+            if [ -z "$sum" ]; then
+              echo "Missing checksum for ${arch}"
+              exit 1
+            fi
+
+            case "$sum" in
+              [0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]* ) ;;
+              * )
+                echo "Invalid checksum for ${arch}: $sum"
+                exit 1
+                ;;
+            esac
+
+            echo "$sum"
+          }
+
+          DARWIN_ARM64="$(fetch_sha darwin-arm64)"
+          DARWIN_X64="$(fetch_sha darwin-x64)"
+          LINUX_ARM64="$(fetch_sha linux-arm64)"
+          LINUX_X64="$(fetch_sha linux-x64)"
+
+          echo "darwin_arm64=$DARWIN_ARM64" >> "$GITHUB_OUTPUT"
+          echo "darwin_x64=$DARWIN_X64" >> "$GITHUB_OUTPUT"
+          echo "linux_arm64=$LINUX_ARM64" >> "$GITHUB_OUTPUT"
+          echo "linux_x64=$LINUX_X64" >> "$GITHUB_OUTPUT"
+
+      - name: Update Formula/proteus.rb
+        env:
+          REPO: ${{ github.repository }}
+          VERSION: ${{ steps.meta.outputs.version }}
+          TAG: ${{ steps.meta.outputs.tag }}
+          DARWIN_ARM64_SHA: ${{ steps.checksums.outputs.darwin_arm64 }}
+          DARWIN_X64_SHA: ${{ steps.checksums.outputs.darwin_x64 }}
+          LINUX_ARM64_SHA: ${{ steps.checksums.outputs.linux_arm64 }}
+          LINUX_X64_SHA: ${{ steps.checksums.outputs.linux_x64 }}
+        run: |
+          set -euo pipefail
+
+          cat > Formula/proteus.rb <<EOF
+          class Proteus < Formula
+            desc "Switch providers, models, and config profiles for AI developer tools"
+            homepage "https://github.com/${REPO}"
+            version "${VERSION}"
+
+            on_macos do
+              if Hardware::CPU.arm?
+                url "https://github.com/${REPO}/releases/download/${TAG}/proteus-v${VERSION}-darwin-arm64.tar.gz"
+                sha256 "${DARWIN_ARM64_SHA}"
+              else
+                url "https://github.com/${REPO}/releases/download/${TAG}/proteus-v${VERSION}-darwin-x64.tar.gz"
+                sha256 "${DARWIN_X64_SHA}"
+              end
+            end
+
+            on_linux do
+              if Hardware::CPU.arm?
+                url "https://github.com/${REPO}/releases/download/${TAG}/proteus-v${VERSION}-linux-arm64.tar.gz"
+                sha256 "${LINUX_ARM64_SHA}"
+              else
+                url "https://github.com/${REPO}/releases/download/${TAG}/proteus-v${VERSION}-linux-x64.tar.gz"
+                sha256 "${LINUX_X64_SHA}"
+              end
+            end
+
+            def install
+              bin.install "proteus"
+            end
+
+            test do
+              assert_match "proteus", shell_output("#{bin}/proteus --help")
+            end
+          end
+          EOF
+
+      - name: Commit and push Formula update
+        env:
+          VERSION: ${{ steps.meta.outputs.version }}
+        run: |
+          set -euo pipefail
+
+          if git diff --quiet -- Formula/proteus.rb; then
+            echo "Formula already up-to-date"
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add Formula/proteus.rb
+          git commit -m "chore(homebrew): update formula to v${VERSION}"
+          git push

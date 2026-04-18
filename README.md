@@ -35,6 +35,31 @@ Proteus 把这件事变成一行命令。
 
 ## 安装
 
+### Homebrew（Formula）
+
+> `proteus` 是 CLI 工具，使用 Homebrew Formula（不是 cask）。
+
+安装方式：
+
+```bash
+brew tap HeminWon/proteus
+brew install proteus
+```
+
+升级：
+
+```bash
+brew update
+brew upgrade proteus
+```
+
+说明：
+- 本仓库自带 tap 与 `Formula/proteus.rb`
+- 支持平台：macOS (arm64/x64)、Linux (arm64/x64)
+- 发布 tag（`v*`）后会自动更新 Formula 中的 version/url/sha256
+- 若自动更新失败，可在 Actions 手动触发 `update-homebrew-formula`（`workflow_dispatch`）补跑
+- 发布二进制固定使用 Bun `1.3.13+`
+
 ### 开发模式
 
 ```bash
@@ -71,6 +96,8 @@ proteus --list
 ```
 
 注意：在较新的 macOS 上，Bun `--compile` 生成的单文件二进制可能被系统安全策略拦截。开发和自用场景下，优先直接运行 `tsx` 版本，或用一个 shell wrapper 调 `npx tsx src/cli/index.ts`。
+
+已知兼容性提示：Bun `1.3.12` 在部分 macOS 环境可能导致编译产物运行时被系统直接 `killed`。建议使用 `1.3.13+` 后再执行 `build:bun`。
 
 ---
 
