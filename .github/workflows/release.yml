@@ -17,22 +17,14 @@ jobs:
           - os: macos-14
             arch: darwin-arm64
             bun_target: bun-darwin-arm64
-            allow_failure: false
-          - os: macos-13
-            arch: darwin-x64
-            bun_target: bun-darwin-x64
-            allow_failure: true
           - os: ubuntu-24.04-arm
             arch: linux-arm64
             bun_target: bun-linux-arm64
-            allow_failure: false
           - os: ubuntu-22.04
             arch: linux-x64
             bun_target: bun-linux-x64
-            allow_failure: false
 
     runs-on: ${{ matrix.os }}
-    continue-on-error: ${{ matrix.allow_failure }}
 
     steps:
       - name: Checkout
