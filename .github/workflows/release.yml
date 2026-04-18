@@ -38,6 +38,9 @@ jobs:
         with:
           bun-version: latest
 
+      - name: Install dependencies
+        run: npm ci
+
       - name: Build binary
         run: bun build --compile --target=${{ matrix.bun_target }} src/cli/index.ts --outfile dist/proteus
 
