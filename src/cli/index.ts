@@ -110,7 +110,7 @@ function parseCliArgs(argv: string[]): CliOptions {
   };
 }
 
-try {
+async function main(): Promise<void> {
   const cli = parseCliArgs(process.argv.slice(2));
 
   if (cli.action === "help") {
@@ -118,13 +118,15 @@ try {
   } else if (cli.action === "list") {
     listProviders();
   } else if (cli.action === "validate") {
-    validateConfig();
+    await validateConfig();
   } else {
     applyProvider(cli.providerInput!, { dryRun: cli.dryRun });
   }
-} catch (error) {
+}
+
+main().catch((error) => {
   const message = error instanceof Error ? error.message : String(error);
   console.error(`Error: ${message}`);
   console.error("Tip: run with --help to see supported usage.");
   process.exit(1);
-}
+});

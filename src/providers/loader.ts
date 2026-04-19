@@ -19,8 +19,9 @@ function readAppConfig(): { config_dir?: string } {
     if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
       return parsed as { config_dir?: string };
     }
-  } catch {
-    // ignore
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.warn(`Warning: failed to parse ${configPath}: ${message}`);
   }
   return {};
 }

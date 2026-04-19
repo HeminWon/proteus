@@ -1,5 +1,3 @@
-import { spawnSync } from "child_process";
-
 import type { Provider } from "./structure.js";
 
 export interface LiveValidationResult {
@@ -24,14 +22,7 @@ function buildModelsUrl(baseUrl: string): string {
   return `${base}/v1/models`;
 }
 
-function maskToken(token: string): string {
-  if (token.length <= 8) {
-    return "****";
-  }
-  return `${token.slice(0, 4)}...${token.slice(-4)}`;
-}
-
-export function validateProviderLive(provider: Provider): LiveValidationResult {
+export async function validateProviderLive(provider: Provider): Promise<LiveValidationResult> {
   const startedAt = Date.now();
   const env = provider.claude.env;
   const token = env.ANTHROPIC_AUTH_TOKEN;
@@ -56,75 +47,61 @@ export function validateProviderLive(provider: Provider): LiveValidationResult {
   }
 
   const url = buildModelsUrl(baseUrl);
-  const args = [
-    "-sS",
-    "-L",
-    "--max-time",
-    "15",
-    "-o",
-    "/dev/null",
-    "-w",
-    "%{http_code}",
-    "-H",
-    `x-api-key: ${token}`,
-    "-H",
-    `authorization: Bearer ${token}`,
-    "-H",
-    "anthropic-version: 2023-06-01",
-    "-H",
-    "accept: application/json",
-    url,
-  ];
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 20000);
 
-  const result = spawnSync("curl", args, {
-    encoding: "utf8",
-    timeout: 20000,
-  });
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "x-api-key": token,
+        authorization: `Bearer ${token}`,
+        "anthropic-version": "2023-06-01",
+        accept: "application/json",
+      },
+      redirect: "follow",
+      signal: controller.signal,
+    });
 
-  if (result.error) {
+    const latencyMs = Date.now() - startedAt;
+    const code = response.status;
+
+    if (code >= 200 && code < 300) {
+      return {
+        providerId: provider.id,
+        status: "ok",
+        detail: `HTTP ${code} (${url})`,
+        latencyMs,
+      };
+    }
+
+    let bodySnippet = "";
+    try {
+      const body = (await response.text()).trim();
+      if (body.length > 0) {
+        bodySnippet = body.replace(/\s+/g, " ").slice(0, 200);
+      }
+    } catch {
+      // ignore body parse errors
+    }
+
     return {
       providerId: provider.id,
       status: "fail",
-      detail: `curl error: ${result.error.message}`,
-      latencyMs: Date.now() - startedAt,
-    };
-  }
-
-  if (result.status !== 0) {
-    const err = (result.stderr || "").trim();
-    return {
-      providerId: provider.id,
-      status: "fail",
-      detail: `curl exited ${result.status}${err ? `: ${err}` : ""}`,
-      latencyMs: Date.now() - startedAt,
-    };
-  }
-
-  const code = Number((result.stdout || "").trim());
-  if (!Number.isFinite(code)) {
-    return {
-      providerId: provider.id,
-      status: "fail",
-      detail: "invalid HTTP status returned by curl",
-      latencyMs: Date.now() - startedAt,
-    };
-  }
-
-  const latencyMs = Date.now() - startedAt;
-
-  if (code >= 200 && code < 300) {
-    return {
-      providerId: provider.id,
-      status: "ok",
-      detail: `HTTP ${code} (${url}, token ${maskToken(token)})`,
+      detail: bodySnippet
+        ? `HTTP ${code} (${url}) | body=${JSON.stringify(bodySnippet)}`
+        : `HTTP ${code} (${url})`,
       latencyMs,
     };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    return {
+      providerId: provider.id,
+      status: "fail",
+      detail: `request error: ${message}`,
+      latencyMs: Date.now() - startedAt,
+    };
+  } finally {
+    clearTimeout(timeout);
   }
-
-  return {
-    providerId: provider.id,
-    status: "fail",
-    detail: `HTTP ${code} (${url}, token ${maskToken(token)})`,
-    latencyMs,
-  };
 }

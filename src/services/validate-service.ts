@@ -16,7 +16,7 @@ import type {
 } from "../core/types.js";
 import { loadProviders } from "../providers/loader.js";
 import type { Provider, ProvidersConfig } from "../providers/types.js";
-import { validateProviderLive } from "../validators/live.js";
+import { validateProviderLive, type LiveValidationResult } from "../validators/live.js";
 
 function supportsColor(): boolean {
   return Boolean(process.stdout.isTTY) && process.env.NO_COLOR === undefined;
@@ -342,7 +342,22 @@ export function listProviders(): void {
   }
 }
 
-export function validateConfig(): void {
+async function validateProvidersLive(
+  providers: Provider[],
+  concurrency: number
+): Promise<LiveValidationResult[]> {
+  const results: LiveValidationResult[] = [];
+
+  for (let i = 0; i < providers.length; i += concurrency) {
+    const batch = providers.slice(i, i + concurrency);
+    const batchResults = await Promise.all(batch.map((provider) => validateProviderLive(provider)));
+    results.push(...batchResults);
+  }
+
+  return results;
+}
+
+export async function validateConfig(): Promise<void> {
   const { config, configDir } = loadProviders();
   const cache = readCache();
   const activeProviderId = getActiveProviderId(config, cache);
@@ -352,9 +367,10 @@ export function validateConfig(): void {
   console.log(`- active (cache): ${activeProviderId ?? "unset"}`);
   console.log(`- providers: ${config.providers.length}`);
 
-  console.log("- live validation: enabled (curl provider validation endpoint)");
+  const concurrency = 5;
+  console.log(`- live validation: enabled (HTTP endpoint, concurrency=${concurrency})`);
 
-  const results = config.providers.map((provider) => validateProviderLive(provider));
+  const results = await validateProvidersLive(config.providers, concurrency);
   for (const result of results) {
     const mark = result.status === "ok" ? "OK" : result.status === "skip" ? "SKIP" : "FAIL";
     const markDisplay = colorStatus(result.status, mark);
