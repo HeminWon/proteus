@@ -1,11 +1,5 @@
 package core
 
-type CacheData struct {
-	Active *struct {
-		Claude string `json:"claude,omitempty"`
-	} `json:"active,omitempty"`
-}
-
 type CliAction string
 
 const (

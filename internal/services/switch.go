@@ -3,9 +3,10 @@ package services
 import (
 	"fmt"
 	"sort"
+	"strings"
 
-	"github.com/HeminWon/proteus/go/internal/providers"
-	"github.com/HeminWon/proteus/go/internal/store"
+	"github.com/HeminWon/proteus/internal/providers"
+	"github.com/HeminWon/proteus/internal/store"
 )
 
 type SwitchPlan struct {
@@ -71,8 +72,7 @@ func asStringMap(value any) map[string]string {
 	}
 	result := map[string]string{}
 	for k, v := range obj {
-		s, ok := v.(string)
-		if ok {
+		if s, ok := v.(string); ok {
 			result[k] = s
 		}
 	}
@@ -144,7 +144,7 @@ func printSwitchPlan(plan SwitchPlan) {
 			fmt.Printf("- %s: none\n", label)
 			return
 		}
-		fmt.Printf("- %s: %s\n", label, join(keys, ", "))
+		fmt.Printf("- %s: %s\n", label, strings.Join(keys, ", "))
 	}
 	printKeys("env added", plan.EnvAdded)
 	printKeys("env updated", plan.EnvUpdated)
@@ -154,17 +154,6 @@ func printSwitchPlan(plan SwitchPlan) {
 	} else {
 		fmt.Println("- availableModels: unchanged")
 	}
-}
-
-func join(items []string, sep string) string {
-	if len(items) == 0 {
-		return ""
-	}
-	out := items[0]
-	for i := 1; i < len(items); i++ {
-		out += sep + items[i]
-	}
-	return out
 }
 
 func ApplyProvider(input string, dryRun bool) error {
@@ -181,7 +170,7 @@ func ApplyProvider(input string, dryRun bool) error {
 		for _, p := range loaded.Config.Providers {
 			available = append(available, p.ID)
 		}
-		return fmt.Errorf("Provider \"%s\" not found. Available: %s", input, join(available, ", "))
+		return fmt.Errorf("provider %q not found. Available: %s", input, strings.Join(available, ", "))
 	}
 
 	settings, err := store.ReadSettings()

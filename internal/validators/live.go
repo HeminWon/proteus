@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/HeminWon/proteus/go/internal/providers"
+	"github.com/HeminWon/proteus/internal/providers"
 )
 
 type LiveValidationResult struct {

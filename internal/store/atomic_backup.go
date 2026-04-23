@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"sort"
 	"time"
+
+	"github.com/HeminWon/proteus/internal/core"
 )
 
 func writeFileAtomic(filePath string, content []byte) error {
@@ -82,7 +84,7 @@ func CleanupOldBackups() error {
 		return backups[i].mtimeMs > backups[j].mtimeMs
 	})
 
-	for _, stale := range backups[10:] {
+	for _, stale := range backups[core.MaxBackups:] {
 		if err := os.Remove(stale.path); err != nil {
 			return err
 		}

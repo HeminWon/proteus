@@ -1,4 +1,4 @@
-module github.com/HeminWon/proteus/go
+module github.com/HeminWon/proteus
 
 go 1.22
 

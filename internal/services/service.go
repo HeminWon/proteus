@@ -3,8 +3,8 @@ package services
 import (
 	"fmt"
 
-	"github.com/HeminWon/proteus/go/internal/providers"
-	"github.com/HeminWon/proteus/go/internal/store"
+	"github.com/HeminWon/proteus/internal/providers"
+	"github.com/HeminWon/proteus/internal/store"
 )
 
 func getActiveProviderID(config providers.ProvidersConfig, cache store.CacheData) string {

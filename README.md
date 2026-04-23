@@ -63,15 +63,8 @@ brew upgrade proteus
 ### 开发模式
 
 ```bash
-npm ci
-npm run list:go
-```
-
-也可以直接用 package script：
-
-```bash
-npm run list:go
-npm run validate:go
+go run ./cmd/proteus --list
+go run ./cmd/proteus --validate
 ```
 
 ### 配置示例
@@ -85,7 +78,7 @@ cp configs/providers.example.yaml ~/.config/proteus/providers.yaml
 ### 打包为二进制
 
 ```bash
-npm run build:go
+just build
 ```
 
 生成的 `proteus` 二进制可直接运行，或复制到 PATH：
@@ -95,7 +88,7 @@ cp dist/proteus /usr/local/bin/proteus
 proteus --list
 ```
 
-注意：本仓库当前发布链路与本地二进制构建均基于 Go。若仅做开发调试，也可直接使用 `npm run list:go` / `npm run validate:go`。
+注意：本仓库当前发布链路与本地二进制构建均基于 Go。若仅做开发调试，可直接使用 `go run ./cmd/proteus`。
 
 ---
 

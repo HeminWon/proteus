@@ -3,11 +3,11 @@ package services
 import (
 	"fmt"
 
-	"github.com/HeminWon/proteus/go/internal/core"
-	"github.com/HeminWon/proteus/go/internal/providers"
-	"github.com/HeminWon/proteus/go/internal/store"
-	"github.com/HeminWon/proteus/go/internal/term"
-	"github.com/HeminWon/proteus/go/internal/validators"
+	"github.com/HeminWon/proteus/internal/core"
+	"github.com/HeminWon/proteus/internal/providers"
+	"github.com/HeminWon/proteus/internal/store"
+	"github.com/HeminWon/proteus/internal/term"
+	"github.com/HeminWon/proteus/internal/validators"
 )
 
 func formatLatency(latencyMs *int64, status string) string {

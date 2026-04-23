@@ -36,13 +36,12 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version-file: go/go.mod
+          go-version-file: go.mod
 
       - name: Build binary
         run: |
           mkdir -p dist
-          CGO_ENABLED=0 GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -trimpath -ldflags="-s -w" -o ../dist/proteus ./cmd/proteus
-        working-directory: go
+          CGO_ENABLED=0 GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -trimpath -ldflags="-s -w" -o dist/proteus ./cmd/proteus
 
       - name: Smoke test binary
         run: ./dist/proteus --help
