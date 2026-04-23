@@ -39,6 +39,10 @@ jobs:
 
           if [ -n "${INPUT_TAG:-}" ]; then
             TAG="$INPUT_TAG"
+            if ! gh release view "$TAG" --repo "$REPO" > /dev/null 2>&1; then
+              echo "Release '$TAG' not found"
+              exit 1
+            fi
           else
             TAG="$(gh release view --repo "$REPO" --json tagName --jq '.tagName')"
           fi
