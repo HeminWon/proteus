@@ -10,7 +10,7 @@
     "dev:go": "cd go && go run ./cmd/proteus",
     "list:go": "cd go && go run ./cmd/proteus --list",
     "validate:go": "cd go && go run ./cmd/proteus --validate",
-    "build:bun": "mkdir -p dist && bun build --compile --target=bun src/cli/index.ts --outfile=dist/proteus"
+    "build:go": "cd go && mkdir -p ../dist && go build -trimpath -ldflags=\"-s -w\" -o ../dist/proteus ./cmd/proteus"
   },
   "dependencies": {
     "js-yaml": "^4.1.0"

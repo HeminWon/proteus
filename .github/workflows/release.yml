@@ -16,13 +16,16 @@ jobs:
         include:
           - os: macos-14
             arch: darwin-arm64
-            bun_target: bun-darwin-arm64
+            goos: darwin
+            goarch: arm64
           - os: ubuntu-24.04-arm
             arch: linux-arm64
-            bun_target: bun-linux-arm64
+            goos: linux
+            goarch: arm64
           - os: ubuntu-22.04
             arch: linux-x64
-            bun_target: bun-linux-x64
+            goos: linux
+            goarch: amd64
 
     runs-on: ${{ matrix.os }}
 
@@ -30,16 +33,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
+      - name: Setup Go
+        uses: actions/setup-go@v5
         with:
-          bun-version: latest
-
-      - name: Install dependencies
-        run: npm ci
+          go-version-file: go/go.mod
 
       - name: Build binary
-        run: bun build --compile --target=${{ matrix.bun_target }} src/cli/index.ts --outfile dist/proteus
+        run: |
+          mkdir -p dist
+          CGO_ENABLED=0 GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -trimpath -ldflags="-s -w" -o ../dist/proteus ./cmd/proteus
+        working-directory: go
 
       - name: Smoke test binary
         run: ./dist/proteus --help

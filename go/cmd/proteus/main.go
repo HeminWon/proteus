@@ -11,10 +11,10 @@ import (
 
 func printHelp() {
 	fmt.Println("Usage:")
-	fmt.Println("  go run ./go/cmd/proteus [provider-id|provider-name] [--dry-run]")
-	fmt.Println("  go run ./go/cmd/proteus --list")
-	fmt.Println("  go run ./go/cmd/proteus --validate")
-	fmt.Println("  go run ./go/cmd/proteus --help")
+	fmt.Println("  proteus [provider-id|provider-name] [--dry-run]")
+	fmt.Println("  proteus --list")
+	fmt.Println("  proteus --validate")
+	fmt.Println("  proteus --help")
 	fmt.Println()
 	fmt.Println("Options:")
 	fmt.Println("  --list           List providers (default when no args)")

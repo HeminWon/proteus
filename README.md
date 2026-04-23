@@ -58,20 +58,20 @@ brew upgrade proteus
 - 支持平台：macOS (arm64)、Linux (arm64/x64)
 - 发布 tag（`v*`）后会自动更新 Formula 中的 version/url/sha256
 - 若自动更新失败，可在 Actions 手动触发 `update-homebrew-formula`（`workflow_dispatch`）补跑
-- 发布二进制使用 Bun 稳定版（`latest`）
+- 发布二进制由 Go 构建产出
 
 ### 开发模式
 
 ```bash
 npm ci
-npx tsx src/cli/index.ts --list
+npm run list:go
 ```
 
 也可以直接用 package script：
 
 ```bash
-npm run list
-npm run validate
+npm run list:go
+npm run validate:go
 ```
 
 ### 配置示例
@@ -85,7 +85,7 @@ cp configs/providers.example.yaml ~/.config/proteus/providers.yaml
 ### 打包为二进制
 
 ```bash
-npm run build:bun
+npm run build:go
 ```
 
 生成的 `proteus` 二进制可直接运行，或复制到 PATH：
@@ -95,9 +95,7 @@ cp dist/proteus /usr/local/bin/proteus
 proteus --list
 ```
 
-注意：在较新的 macOS 上，Bun `--compile` 生成的单文件二进制可能被系统安全策略拦截。开发和自用场景下，优先直接运行 `tsx` 版本，或用一个 shell wrapper 调 `npx tsx src/cli/index.ts`。
-
-已知兼容性提示：Bun `1.3.12` 在部分 macOS 环境可能导致编译产物运行时被系统直接 `killed`。建议使用 `1.3.13+` 后再执行 `build:bun`。
+注意：本仓库当前发布链路与本地二进制构建均基于 Go。若仅做开发调试，也可直接使用 `npm run list:go` / `npm run validate:go`。
 
 ---
 
@@ -117,7 +115,7 @@ proteus --help                      # 查看完整帮助
 参数规则（避免误用）：
 
 - `--list` / `--validate` / `--help` 互斥，不能组合
-- `--dry-run` 只能用于切换 provider（如 `npx tsx src/cli/index.ts openrouter --dry-run`）
+- `--dry-run` 只能用于切换 provider（如 `proteus openrouter --dry-run`）
 - 未知参数会直接报错，并提示使用 `--help`
 
 配置统一写在 `providers.yaml`，切换时只更新 `~/.claude/settings.json` 中的 `env` 和 `availableModels`。

@@ -27,7 +27,7 @@ func ListProviders() error {
 
 	activeID := getActiveProviderID(loaded.Config, store.ReadCache())
 	fmt.Printf("Config dir: %s\n\n", loaded.ConfigDir)
-	fmt.Println("Available providers:\n")
+	fmt.Println("Available providers:")
 	for _, p := range loaded.Config.Providers {
 		active := ""
 		if activeID != "" && p.ID == activeID {
