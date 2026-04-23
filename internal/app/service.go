@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/HeminWon/proteus/internal/providers"
-	"github.com/HeminWon/proteus/internal/store"
+	"github.com/HeminWon/proteus/internal/storage"
 )
 
 func getActiveProviderID(config providers.ProvidersConfig, cache store.CacheData) string {

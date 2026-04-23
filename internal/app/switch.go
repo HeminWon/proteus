@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/HeminWon/proteus/internal/providers"
-	"github.com/HeminWon/proteus/internal/store"
+	"github.com/HeminWon/proteus/internal/storage"
 )
 
 type SwitchPlan struct {

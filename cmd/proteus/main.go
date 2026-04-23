@@ -5,8 +5,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/HeminWon/proteus/internal/core"
-	"github.com/HeminWon/proteus/internal/services"
+	"github.com/HeminWon/proteus/internal/app"
+	"github.com/HeminWon/proteus/internal/cli"
 )
 
 func parseArgs(argv []string) (core.CliOptions, error) {

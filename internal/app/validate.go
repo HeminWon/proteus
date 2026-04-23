@@ -3,9 +3,9 @@ package services
 import (
 	"fmt"
 
-	"github.com/HeminWon/proteus/internal/core"
+	"github.com/HeminWon/proteus/internal/cli"
 	"github.com/HeminWon/proteus/internal/providers"
-	"github.com/HeminWon/proteus/internal/store"
+	"github.com/HeminWon/proteus/internal/storage"
 	"github.com/HeminWon/proteus/internal/term"
 	"github.com/HeminWon/proteus/internal/validators"
 )

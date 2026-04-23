@@ -7,7 +7,7 @@ import (
 	"sort"
 	"time"
 
-	"github.com/HeminWon/proteus/internal/core"
+	"github.com/HeminWon/proteus/internal/cli"
 )
 
 func writeFileAtomic(filePath string, content []byte) error {
