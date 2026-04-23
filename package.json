@@ -7,6 +7,9 @@
     "dev": "tsx src/cli/index.ts",
     "list": "tsx src/cli/index.ts --list",
     "validate": "tsx src/cli/index.ts --validate",
+    "dev:go": "cd go && go run ./cmd/proteus",
+    "list:go": "cd go && go run ./cmd/proteus --list",
+    "validate:go": "cd go && go run ./cmd/proteus --validate",
     "build:bun": "mkdir -p dist && bun build --compile --target=bun src/cli/index.ts --outfile=dist/proteus"
   },
   "dependencies": {
