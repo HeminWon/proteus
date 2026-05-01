@@ -84,6 +84,9 @@ func CleanupOldBackups() error {
 		return backups[i].mtimeMs > backups[j].mtimeMs
 	})
 
+	if len(backups) <= core.MaxBackups {
+		return nil
+	}
 	for _, stale := range backups[core.MaxBackups:] {
 		if err := os.Remove(stale.path); err != nil {
 			return err
