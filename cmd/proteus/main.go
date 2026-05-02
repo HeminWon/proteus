@@ -5,9 +5,47 @@ import (
 	"os"
 	"strings"
 
-	"github.com/HeminWon/proteus/internal/app"
-	"github.com/HeminWon/proteus/internal/cli"
+	services "github.com/HeminWon/proteus/internal/app"
+	core "github.com/HeminWon/proteus/internal/cli"
 )
+
+func parseLaunchArgs(args []string) (core.CliOptions, error) {
+	dryRun := false
+	list := false
+	positional := make([]string, 0)
+
+	for _, arg := range args {
+		switch {
+		case arg == "--dry-run":
+			dryRun = true
+		case arg == "--list":
+			list = true
+		case strings.HasPrefix(arg, "-"):
+			return core.CliOptions{}, fmt.Errorf("unknown launch option: %s", arg)
+		default:
+			positional = append(positional, arg)
+		}
+	}
+
+	if list {
+		if len(positional) > 0 {
+			return core.CliOptions{}, fmt.Errorf("unexpected profile argument with launch --list")
+		}
+		if dryRun {
+			return core.CliOptions{}, fmt.Errorf("--dry-run cannot be used with launch --list")
+		}
+		return core.CliOptions{Action: core.ActionLaunch, ListLaunch: true}, nil
+	}
+
+	if len(positional) == 0 {
+		return core.CliOptions{}, fmt.Errorf("missing profile for launch")
+	}
+	if len(positional) > 1 {
+		return core.CliOptions{}, fmt.Errorf("too many profile arguments: %s", strings.Join(positional, ", "))
+	}
+
+	return core.CliOptions{Action: core.ActionLaunch, ProfileInput: positional[0], DryRun: dryRun}, nil
+}
 
 func parseArgs(argv []string) (core.CliOptions, error) {
 	dryRun := false
@@ -33,6 +71,11 @@ func parseArgs(argv []string) (core.CliOptions, error) {
 				return core.CliOptions{}, fmt.Errorf("--validate cannot be combined with other actions")
 			}
 			action = string(core.ActionValidate)
+		case arg == "launch":
+			if action != "" {
+				return core.CliOptions{}, fmt.Errorf("launch cannot be combined with other actions")
+			}
+			return parseLaunchArgs(argv[1:])
 		case strings.HasPrefix(arg, "-"):
 			return core.CliOptions{}, fmt.Errorf("unknown option: %s", arg)
 		default:
@@ -79,14 +122,20 @@ func parseArgs(argv []string) (core.CliOptions, error) {
 func printHelp() {
 	fmt.Println("Usage:")
 	fmt.Println("  proteus [provider-id|provider-name] [--dry-run]")
+	fmt.Println("  proteus launch <profile> [--dry-run]")
+	fmt.Println("  proteus launch --list")
 	fmt.Println("  proteus --list")
 	fmt.Println("  proteus --validate")
 	fmt.Println("  proteus --help")
 	fmt.Println()
+	fmt.Println("Commands:")
+	fmt.Println("  switch (default)  Persist provider by overwriting ~/.claude/settings.json")
+	fmt.Println("  launch            Start claude with profile env in current process (no file writes)")
+	fmt.Println()
 	fmt.Println("Options:")
 	fmt.Println("  --list           List providers (default when no args)")
 	fmt.Println("  --validate       Validate providers.yaml and run live checks")
-	fmt.Println("  --dry-run        Preview switch plan without writing files")
+	fmt.Println("  --dry-run        Preview switch/launch plan without executing writes/exec")
 	fmt.Println("  --help, -h       Show help")
 }
 
@@ -106,6 +155,8 @@ func run() error {
 		return services.ValidateConfig()
 	case core.ActionSwitch:
 		return services.ApplyProvider(parsed.ProviderInput, parsed.DryRun)
+	case core.ActionLaunch:
+		return services.LaunchProfile(parsed.ProfileInput, parsed.DryRun, parsed.ListLaunch)
 	default:
 		return fmt.Errorf("unsupported action: %s", parsed.Action)
 	}

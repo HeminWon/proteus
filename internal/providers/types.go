@@ -13,9 +13,14 @@ type Provider struct {
 	} `yaml:"codex,omitempty"`
 }
 
+type Profile struct {
+	Provider string `yaml:"provider"`
+}
+
 type ProvidersConfig struct {
-	Version   int        `yaml:"version"`
-	Providers []Provider `yaml:"providers"`
+	Version   int                `yaml:"version"`
+	Providers []Provider         `yaml:"providers"`
+	Profiles  map[string]Profile `yaml:"profiles,omitempty"`
 }
 
 type LoadProvidersResult struct {

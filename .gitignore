@@ -1,3 +1,6 @@
 dist/
 .DS_Store
 providers.yaml
+.claude/
+openspec/changes/archive/
+openspec/config.yaml
