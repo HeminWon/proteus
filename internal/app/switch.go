@@ -5,6 +5,7 @@ import (
 	"sort"
 	"strings"
 
+	core "github.com/HeminWon/proteus/internal/cli"
 	"github.com/HeminWon/proteus/internal/providers"
 	"github.com/HeminWon/proteus/internal/storage"
 )
@@ -170,7 +171,7 @@ func ApplyProvider(input string, dryRun bool) error {
 		for _, p := range loaded.Config.Providers {
 			available = append(available, p.ID)
 		}
-		return fmt.Errorf("provider %q not found. Available: %s", input, strings.Join(available, ", "))
+		return fmt.Errorf("provider %q not found. Available: %s%s", input, strings.Join(available, ", "), core.SuggestProvider(input, available))
 	}
 
 	settings, err := store.ReadSettings()

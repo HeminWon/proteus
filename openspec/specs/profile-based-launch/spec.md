@@ -1,4 +1,7 @@
-## ADDED Requirements
+## Purpose
+Enable launching Claude by profile with safe runtime env resolution, clear diagnostics, and no persistent global settings mutation.
+
+## Requirements
 
 ### Requirement: Launch Claude by profile without persisting settings
 The system MUST provide a `proteus launch <profile>` command that resolves the target provider from the profile and starts `claude` via process replacement (`syscall.Exec`) using runtime environment injection, without writing any Claude settings file.

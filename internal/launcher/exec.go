@@ -8,6 +8,7 @@ import (
 	"strings"
 	"syscall"
 
+	core "github.com/HeminWon/proteus/internal/cli"
 	"github.com/HeminWon/proteus/internal/providers"
 	store "github.com/HeminWon/proteus/internal/storage"
 )
@@ -22,6 +23,7 @@ type ResolvedLaunch struct {
 	Provider            providers.Provider
 	Env                 map[string]string
 	ProviderEnvKeys     []string
+	TokenSource         string
 	Warnings            []string
 	CriticalWarns       []string
 }
@@ -56,7 +58,8 @@ func availableProviders(config providers.ProvidersConfig) []string {
 func Resolve(config providers.ProvidersConfig, profile string) (ResolvedLaunch, error) {
 	binding, ok := config.Profiles[profile]
 	if !ok {
-		return ResolvedLaunch{}, fmt.Errorf("profile %q not found. Available profiles: %s", profile, strings.Join(availableProfiles(config), ", "))
+		profiles := availableProfiles(config)
+		return ResolvedLaunch{}, fmt.Errorf("profile %q not found. Available profiles: %s%s", profile, strings.Join(profiles, ", "), core.SuggestProfile(profile, profiles))
 	}
 
 	provider := findProviderByID(config, binding.Provider)
@@ -82,11 +85,30 @@ func Resolve(config providers.ProvidersConfig, profile string) (ResolvedLaunch, 
 		base[k] = expanded
 		providerKeys = append(providerKeys, k)
 		if expanded == "" {
+			if k == "ANTHROPIC_AUTH_TOKEN" || k == "ANTHROPIC_API_KEY" {
+				continue
+			}
 			warnings = append(warnings, fmt.Sprintf("WARN: env %s expanded to empty value", k))
 		}
-		if k == "ANTHROPIC_API_KEY" && expanded == "" {
-			critical = append(critical, "WARN[critical]: ANTHROPIC_API_KEY is empty and auth may fail")
-		}
+	}
+
+	authToken := strings.TrimSpace(base["ANTHROPIC_AUTH_TOKEN"])
+	apiKey := strings.TrimSpace(base["ANTHROPIC_API_KEY"])
+	tokenSource := ""
+	switch {
+	case authToken != "":
+		tokenSource = "ANTHROPIC_AUTH_TOKEN"
+	case apiKey != "":
+		tokenSource = "ANTHROPIC_API_KEY"
+	default:
+		critical = append(critical, "WARN[critical]: both ANTHROPIC_AUTH_TOKEN and ANTHROPIC_API_KEY are missing or empty; authentication will fail")
+	}
+
+	if authToken == "" && base["ANTHROPIC_AUTH_TOKEN"] != "" {
+		warnings = append(warnings, "WARN: ANTHROPIC_AUTH_TOKEN resolves to whitespace-only value")
+	}
+	if apiKey == "" && base["ANTHROPIC_API_KEY"] != "" {
+		warnings = append(warnings, "WARN: ANTHROPIC_API_KEY resolves to whitespace-only value")
 	}
 
 	if len(providerKeys) == 0 {
@@ -108,6 +130,7 @@ func Resolve(config providers.ProvidersConfig, profile string) (ResolvedLaunch, 
 		Provider:            *provider,
 		Env:                 base,
 		ProviderEnvKeys:     providerKeys,
+		TokenSource:         tokenSource,
 		Warnings:            warnings,
 		CriticalWarns:       critical,
 	}, nil

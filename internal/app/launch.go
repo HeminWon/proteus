@@ -28,7 +28,12 @@ func printResolvedDryRun(resolved launcher.ResolvedLaunch) {
 	fmt.Printf("Profile:  %s\n", resolved.Profile)
 	fmt.Printf("Provider: %s (%s)\n", resolved.ProviderID, resolved.ProviderName)
 	fmt.Printf("Private settings: %s\n", resolved.PrivateSettingsPath)
-	fmt.Printf("CLAUDE_CONFIG_DIR: %s\n\n", resolved.ClaudeConfigDir)
+	fmt.Printf("CLAUDE_CONFIG_DIR: %s\n", resolved.ClaudeConfigDir)
+	if resolved.TokenSource == "" {
+		fmt.Printf("Auth source: %s\n\n", "(missing)")
+	} else {
+		fmt.Printf("Auth source: %s\n\n", resolved.TokenSource)
+	}
 	fmt.Println("Env:")
 	for _, key := range resolved.ProviderEnvKeys {
 		fmt.Printf("  %-20s = %s\n", key, maskEnvValue(key, resolved.Env[key]))
