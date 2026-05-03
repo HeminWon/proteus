@@ -10,6 +10,10 @@ import (
 	core "github.com/HeminWon/proteus/internal/cli"
 )
 
+func isHelpFlag(arg string) bool {
+	return arg == "--help" || arg == "-h"
+}
+
 func parseLaunchArgs(args []string) (core.CliOptions, error) {
 	dryRun := false
 	list := false
@@ -22,7 +26,7 @@ func parseLaunchArgs(args []string) (core.CliOptions, error) {
 			dryRun = true
 		case arg == "--list":
 			list = true
-		case arg == "--help" || arg == "-h":
+		case isHelpFlag(arg):
 			help = true
 		case strings.HasPrefix(arg, "-"):
 			return core.CliOptions{}, fmt.Errorf("unknown launch option: %s%s", arg, core.SuggestFlag(arg, []string{"--dry-run", "--list", "--help", "-h"}))
@@ -70,7 +74,7 @@ func parseSwitchArgs(args []string) (core.CliOptions, error) {
 		switch {
 		case arg == "--dry-run":
 			dryRun = true
-		case arg == "--help" || arg == "-h":
+		case isHelpFlag(arg):
 			help = true
 		case strings.HasPrefix(arg, "-"):
 			return core.CliOptions{}, fmt.Errorf("unknown switch option: %s%s", arg, core.SuggestFlag(arg, []string{"--dry-run", "--help", "-h"}))
@@ -106,7 +110,7 @@ func parseValidateArgs(args []string) (core.CliOptions, error) {
 	for i := 0; i < len(args); i++ {
 		arg := args[i]
 		switch {
-		case arg == "--help" || arg == "-h":
+		case isHelpFlag(arg):
 			if len(args) > 1 {
 				return core.CliOptions{}, fmt.Errorf("validate --help cannot be combined with other options")
 			}
@@ -130,12 +134,7 @@ func parseValidateArgs(args []string) (core.CliOptions, error) {
 			}
 			concurrency = parsed
 		case strings.HasPrefix(arg, "--concurrency="):
-			value := strings.TrimPrefix(arg, "--concurrency=")
-			parsed, err := strconv.Atoi(value)
-			if err != nil || parsed <= 0 {
-				return core.CliOptions{}, fmt.Errorf("invalid --concurrency value: %s", value)
-			}
-			concurrency = parsed
+			return core.CliOptions{}, fmt.Errorf("unsupported validate option: %s (use `--concurrency <n>`)", arg)
 		case strings.HasPrefix(arg, "-"):
 			return core.CliOptions{}, fmt.Errorf("unknown validate option: %s%s", arg, core.SuggestFlag(arg, []string{"--provider", "--concurrency", "--help", "-h"}))
 		default:
@@ -156,29 +155,32 @@ func parseArgs(argv []string) (core.CliOptions, error) {
 	options := []string{"--help", "-h"}
 
 	switch cmd {
-	case "--help", "-h":
-		if len(rest) == 0 {
-			return core.CliOptions{Action: core.ActionHelp}, nil
-		}
-		if len(rest) == 1 {
-			sub := rest[0]
-			if sub == string(core.ActionSwitch) || sub == string(core.ActionLaunch) || sub == string(core.ActionValidate) {
-				return core.CliOptions{Action: core.ActionHelp, HelpCommand: sub}, nil
-			}
-			return core.CliOptions{}, fmt.Errorf("unknown command: %s%s", sub, core.SuggestCommand(sub, []string{"list", "validate", "switch", "launch"}))
-		}
-		return core.CliOptions{}, fmt.Errorf("too many arguments with --help")
 	case "list":
-		if len(rest) > 0 {
-			return core.CliOptions{}, fmt.Errorf("list does not accept arguments")
+		if len(rest) == 0 {
+			return core.CliOptions{Action: core.ActionList}, nil
 		}
-		return core.CliOptions{Action: core.ActionList}, nil
+		if len(rest) == 1 && isHelpFlag(rest[0]) {
+			return core.CliOptions{Action: core.ActionHelp, HelpCommand: "list"}, nil
+		}
+		return core.CliOptions{}, fmt.Errorf("list does not accept arguments")
 	case "validate":
 		return parseValidateArgs(rest)
 	case "switch":
 		return parseSwitchArgs(rest)
 	case "launch":
 		return parseLaunchArgs(rest)
+	case "--help", "-h":
+		if len(rest) == 0 {
+			return core.CliOptions{Action: core.ActionHelp}, nil
+		}
+		if len(rest) == 1 {
+			sub := rest[0]
+			if sub == "list" || sub == string(core.ActionSwitch) || sub == string(core.ActionLaunch) || sub == string(core.ActionValidate) {
+				return core.CliOptions{Action: core.ActionHelp, HelpCommand: sub}, nil
+			}
+			return core.CliOptions{}, fmt.Errorf("unknown command: %s%s", sub, core.SuggestCommand(sub, []string{"list", "validate", "switch", "launch"}))
+		}
+		return core.CliOptions{}, fmt.Errorf("too many arguments with --help")
 	default:
 		if strings.HasPrefix(cmd, "-") {
 			return core.CliOptions{}, fmt.Errorf("unknown option: %s%s", cmd, core.SuggestFlag(cmd, options))
