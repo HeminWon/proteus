@@ -1,12 +1,12 @@
 class Proteus < Formula
   desc "Switch providers, models, and config profiles for AI developer tools"
   homepage "https://github.com/HeminWon/proteus"
-  version "0.1.8"
+  version "0.1.9"
 
   on_macos do
     if Hardware::CPU.arm?
-      url "https://github.com/HeminWon/proteus/releases/download/v0.1.8/proteus-v0.1.8-darwin-arm64.tar.gz"
-      sha256 "4772aec0b8a0cde77f103da073da9ee9522c5b80342177b852038ff8b7a6993a"
+      url "https://github.com/HeminWon/proteus/releases/download/v0.1.9/proteus-v0.1.9-darwin-arm64.tar.gz"
+      sha256 "66c290426750638d2ccdc54ff6c3e2158cdebbb75680988fbb1e034e1890d4e7"
     else
       odie "No darwin-x64 release asset is available for this version."
     end
@@ -14,11 +14,11 @@ class Proteus < Formula
 
   on_linux do
     if Hardware::CPU.arm?
-      url "https://github.com/HeminWon/proteus/releases/download/v0.1.8/proteus-v0.1.8-linux-arm64.tar.gz"
-      sha256 "eabf6e923afa791556252562b6a8269dbab4d0d31873b6bcd46cae9116f33b3a"
+      url "https://github.com/HeminWon/proteus/releases/download/v0.1.9/proteus-v0.1.9-linux-arm64.tar.gz"
+      sha256 "76a2df84449b2a9a24c46ca02b7e55c8037e215f61cfa34ca954eba2dcb46e81"
     else
-      url "https://github.com/HeminWon/proteus/releases/download/v0.1.8/proteus-v0.1.8-linux-x64.tar.gz"
-      sha256 "b19ce52d88cc74ec8a5b153c450f81222b3c261c48f4f385fd1aee5f5e8ed34f"
+      url "https://github.com/HeminWon/proteus/releases/download/v0.1.9/proteus-v0.1.9-linux-x64.tar.gz"
+      sha256 "d37d41296434cb602885544bc12689cbb5c5a921ca1c57560975f73ead1e35f9"
     end
   end
 
