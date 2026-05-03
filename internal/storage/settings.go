@@ -12,8 +12,7 @@ type SettingsReadResult struct {
 	Data   JsonObject
 }
 
-func ReadSettings() (SettingsReadResult, error) {
-	path := SettingsPath()
+func ReadSettingsAt(path string) (SettingsReadResult, error) {
 	raw, err := os.ReadFile(path)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -35,11 +34,19 @@ func ReadSettings() (SettingsReadResult, error) {
 	return SettingsReadResult{Exists: true, Data: JsonObject(obj)}, nil
 }
 
-func WriteSettings(settings JsonObject) error {
+func ReadSettings() (SettingsReadResult, error) {
+	return ReadSettingsAt(SettingsPath())
+}
+
+func WriteSettingsAt(path string, settings JsonObject) error {
 	content, err := json.MarshalIndent(settings, "", "  ")
 	if err != nil {
 		return err
 	}
 	content = append(content, '\n')
-	return writeFileAtomic(SettingsPath(), content)
+	return writeFileAtomic(path, content)
+}
+
+func WriteSettings(settings JsonObject) error {
+	return WriteSettingsAt(SettingsPath(), settings)
 }

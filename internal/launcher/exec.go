@@ -9,17 +9,21 @@ import (
 	"syscall"
 
 	"github.com/HeminWon/proteus/internal/providers"
+	store "github.com/HeminWon/proteus/internal/storage"
 )
 
 type ResolvedLaunch struct {
-	Profile         string
-	ProviderID      string
-	ProviderName    string
-	ClaudePath      string
-	Env             map[string]string
-	ProviderEnvKeys []string
-	Warnings        []string
-	CriticalWarns   []string
+	Profile             string
+	ProviderID          string
+	ProviderName        string
+	ClaudePath          string
+	ClaudeConfigDir     string
+	PrivateSettingsPath string
+	Provider            providers.Provider
+	Env                 map[string]string
+	ProviderEnvKeys     []string
+	Warnings            []string
+	CriticalWarns       []string
 }
 
 func findProviderByID(config providers.ProvidersConfig, id string) *providers.Provider {
@@ -89,16 +93,23 @@ func Resolve(config providers.ProvidersConfig, profile string) (ResolvedLaunch, 
 		return ResolvedLaunch{}, fmt.Errorf("provider %q has no claude.env entries; launch configuration is empty", provider.ID)
 	}
 
+	claudeConfigDir := store.LaunchProfileConfigDir(profile)
+	privateSettingsPath := store.LaunchProfileSettingsPath(profile)
+	base["CLAUDE_CONFIG_DIR"] = claudeConfigDir
+
 	sort.Strings(providerKeys)
 	return ResolvedLaunch{
-		Profile:         profile,
-		ProviderID:      provider.ID,
-		ProviderName:    provider.Name,
-		ClaudePath:      claudePath,
-		Env:             base,
-		ProviderEnvKeys: providerKeys,
-		Warnings:        warnings,
-		CriticalWarns:   critical,
+		Profile:             profile,
+		ProviderID:          provider.ID,
+		ProviderName:        provider.Name,
+		ClaudePath:          claudePath,
+		ClaudeConfigDir:     claudeConfigDir,
+		PrivateSettingsPath: privateSettingsPath,
+		Provider:            *provider,
+		Env:                 base,
+		ProviderEnvKeys:     providerKeys,
+		Warnings:            warnings,
+		CriticalWarns:       critical,
 	}, nil
 }
 

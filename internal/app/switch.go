@@ -40,7 +40,7 @@ func findProviderByInput(config providers.ProvidersConfig, input string) *provid
 	return nil
 }
 
-func buildNextSettings(current store.JsonObject, provider providers.Provider) store.JsonObject {
+func BuildNextSettings(current store.JsonObject, provider providers.Provider) store.JsonObject {
 	next := store.JsonObject{}
 	for k, v := range current {
 		next[k] = v
@@ -178,7 +178,7 @@ func ApplyProvider(input string, dryRun bool) error {
 		return store.WrapSettingsParseError(err)
 	}
 
-	nextSettings := buildNextSettings(settings.Data, *provider)
+	nextSettings := BuildNextSettings(settings.Data, *provider)
 	plan := buildSwitchPlan(activeProviderID, settings.Data, nextSettings, provider.ID, settings.Exists)
 
 	if dryRun {

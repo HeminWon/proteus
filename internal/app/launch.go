@@ -7,6 +7,7 @@ import (
 
 	"github.com/HeminWon/proteus/internal/launcher"
 	"github.com/HeminWon/proteus/internal/providers"
+	store "github.com/HeminWon/proteus/internal/storage"
 )
 
 func maskEnvValue(key, value string) string {
@@ -26,7 +27,8 @@ func maskEnvValue(key, value string) string {
 func printResolvedDryRun(resolved launcher.ResolvedLaunch) {
 	fmt.Printf("Profile:  %s\n", resolved.Profile)
 	fmt.Printf("Provider: %s (%s)\n", resolved.ProviderID, resolved.ProviderName)
-	fmt.Printf("Command:  %s\n\n", resolved.ClaudePath)
+	fmt.Printf("Private settings: %s\n", resolved.PrivateSettingsPath)
+	fmt.Printf("CLAUDE_CONFIG_DIR: %s\n\n", resolved.ClaudeConfigDir)
 	fmt.Println("Env:")
 	for _, key := range resolved.ProviderEnvKeys {
 		fmt.Printf("  %-20s = %s\n", key, maskEnvValue(key, resolved.Env[key]))
@@ -83,9 +85,19 @@ func LaunchProfile(profile string, dryRun bool, list bool) error {
 		return err
 	}
 
+	settings, err := store.ReadSettings()
+	if err != nil {
+		return store.WrapSettingsParseError(err)
+	}
+	nextSettings := BuildNextSettings(settings.Data, resolved.Provider)
+
 	if dryRun {
 		printResolvedDryRun(resolved)
 		return nil
+	}
+
+	if err := store.WriteSettingsAt(resolved.PrivateSettingsPath, nextSettings); err != nil {
+		return err
 	}
 
 	for _, w := range resolved.Warnings {

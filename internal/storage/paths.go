@@ -20,3 +20,19 @@ func CachePath() string {
 func BackupDir() string {
 	return filepath.Join(os.Getenv("HOME"), ".claude", "proteus-backups")
 }
+
+func ProteusConfigDir() string {
+	xdgConfigHome := os.Getenv("XDG_CONFIG_HOME")
+	if xdgConfigHome == "" {
+		xdgConfigHome = filepath.Join(os.Getenv("HOME"), ".config")
+	}
+	return filepath.Join(xdgConfigHome, "proteus")
+}
+
+func LaunchProfileConfigDir(profile string) string {
+	return filepath.Join(ProteusConfigDir(), "claude", "profiles", profile)
+}
+
+func LaunchProfileSettingsPath(profile string) string {
+	return filepath.Join(LaunchProfileConfigDir(profile), "settings.json")
+}
