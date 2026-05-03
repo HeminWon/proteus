@@ -118,7 +118,7 @@ func parseValidateArgs(args []string) (core.CliOptions, error) {
 			i++
 			provider = args[i]
 		case strings.HasPrefix(arg, "--provider="):
-			provider = strings.TrimPrefix(arg, "--provider=")
+			return core.CliOptions{}, fmt.Errorf("unsupported validate option: %s (use `--provider <id>`)", arg)
 		case arg == "--concurrency":
 			if i+1 >= len(args) {
 				return core.CliOptions{}, fmt.Errorf("missing value for --concurrency")
@@ -153,10 +153,10 @@ func parseArgs(argv []string) (core.CliOptions, error) {
 
 	cmd := argv[0]
 	rest := argv[1:]
-	options := []string{"--help", "-h", "--list", "--validate"}
+	options := []string{"--help", "-h"}
 
 	switch cmd {
-	case "--help", "-h", "help":
+	case "--help", "-h":
 		if len(rest) == 0 {
 			return core.CliOptions{Action: core.ActionHelp}, nil
 		}
@@ -165,7 +165,7 @@ func parseArgs(argv []string) (core.CliOptions, error) {
 			if sub == string(core.ActionSwitch) || sub == string(core.ActionLaunch) || sub == string(core.ActionValidate) {
 				return core.CliOptions{Action: core.ActionHelp, HelpCommand: sub}, nil
 			}
-			return core.CliOptions{}, fmt.Errorf("unknown command: %s%s", sub, core.SuggestCommand(sub, []string{"list", "validate", "switch", "launch", "doctor"}))
+			return core.CliOptions{}, fmt.Errorf("unknown command: %s%s", sub, core.SuggestCommand(sub, []string{"list", "validate", "switch", "launch"}))
 		}
 		return core.CliOptions{}, fmt.Errorf("too many arguments with --help")
 	case "list":
@@ -179,28 +179,11 @@ func parseArgs(argv []string) (core.CliOptions, error) {
 		return parseSwitchArgs(rest)
 	case "launch":
 		return parseLaunchArgs(rest)
-	case "doctor":
-		if len(rest) > 0 {
-			return core.CliOptions{}, fmt.Errorf("doctor does not accept arguments")
-		}
-		return core.CliOptions{Action: core.ActionDoctor}, nil
-	case "--list":
-		if len(rest) > 0 {
-			return core.CliOptions{}, fmt.Errorf("--list cannot be combined with other arguments")
-		}
-		return core.CliOptions{Action: core.ActionList, DeprecatedWarnings: []string{"[DEPRECATED] `proteus --list` is deprecated, use `proteus list` instead."}}, nil
-	case "--validate":
-		parsed, err := parseValidateArgs(rest)
-		if err != nil {
-			return core.CliOptions{}, err
-		}
-		parsed.DeprecatedWarnings = []string{"[DEPRECATED] `proteus --validate` is deprecated, use `proteus validate` instead."}
-		return parsed, nil
 	default:
 		if strings.HasPrefix(cmd, "-") {
 			return core.CliOptions{}, fmt.Errorf("unknown option: %s%s", cmd, core.SuggestFlag(cmd, options))
 		}
-		return core.CliOptions{}, fmt.Errorf("unknown command: %s%s", cmd, core.SuggestCommand(cmd, []string{"list", "validate", "switch", "launch", "doctor"}))
+		return core.CliOptions{}, fmt.Errorf("unknown command: %s%s", cmd, core.SuggestCommand(cmd, []string{"list", "validate", "switch", "launch"}))
 	}
 }
 
@@ -257,19 +240,13 @@ func printHelp() {
 	fmt.Println("  proteus switch <provider-id|provider-name> [--dry-run]")
 	fmt.Println("  proteus launch <profile> [--dry-run]")
 	fmt.Println("  proteus launch --list")
-	fmt.Println("  proteus doctor")
 	fmt.Println("  proteus --help")
-	fmt.Println()
-	fmt.Println("Compatibility:")
-	fmt.Println("  proteus --list      (deprecated, use `proteus list`)")
-	fmt.Println("  proteus --validate  (deprecated, use `proteus validate`)")
 	fmt.Println()
 	fmt.Println("Commands:")
 	fmt.Println("  list              List providers")
 	fmt.Println("  validate          Validate providers.yaml and run live checks")
 	fmt.Println("  switch            Persist provider by overwriting ~/.claude/settings.json")
 	fmt.Println("  launch            Start claude with profile env in current process (no file writes)")
-	fmt.Println("  doctor            Alias of validate")
 	fmt.Println()
 	fmt.Println("Tip:")
 	fmt.Println("  Use `proteus <command> --help` for command-specific usage")
@@ -281,10 +258,6 @@ func run() error {
 		return err
 	}
 
-	for _, warning := range parsed.DeprecatedWarnings {
-		fmt.Println(warning)
-	}
-
 	switch parsed.Action {
 	case core.ActionHelp:
 		printHelpFor(parsed.HelpCommand)
@@ -292,8 +265,6 @@ func run() error {
 	case core.ActionList:
 		return services.ListProviders()
 	case core.ActionValidate:
-		return services.ValidateConfig(parsed.ValidateProvider, parsed.ValidateConcurrency)
-	case core.ActionDoctor:
 		return services.ValidateConfig(parsed.ValidateProvider, parsed.ValidateConcurrency)
 	case core.ActionSwitch:
 		return services.ApplyProvider(parsed.ProviderInput, parsed.DryRun)

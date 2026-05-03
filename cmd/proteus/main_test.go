@@ -13,7 +13,6 @@ func TestParseArgsCanonicalCommands(t *testing.T) {
 	}{
 		{name: "list", args: []string{"list"}, wantAction: "list"},
 		{name: "validate", args: []string{"validate"}, wantAction: "validate"},
-		{name: "doctor", args: []string{"doctor"}, wantAction: "doctor"},
 		{name: "switch", args: []string{"switch", "anthropic"}, wantAction: "switch"},
 		{name: "launch", args: []string{"launch", "default"}, wantAction: "launch"},
 	}
@@ -32,29 +31,20 @@ func TestParseArgsCanonicalCommands(t *testing.T) {
 }
 
 func TestParseArgsLegacyCompatibility(t *testing.T) {
-	got, err := parseArgs([]string{"--list"})
-	if err != nil {
-		t.Fatalf("parseArgs error = %v", err)
+	_, err := parseArgs([]string{"--list"})
+	if err == nil {
+		t.Fatalf("expected error for removed legacy --list")
 	}
-	if string(got.Action) != "list" {
-		t.Fatalf("action = %q, want list", got.Action)
-	}
-	if len(got.DeprecatedWarnings) == 0 {
-		t.Fatalf("expected deprecation warnings for --list")
+	if got := err.Error(); got == "" || !strings.Contains(got, "unknown option: --list") {
+		t.Fatalf("unexpected error: %v", err)
 	}
 
-	got, err = parseArgs([]string{"--validate", "--concurrency", "3"})
-	if err != nil {
-		t.Fatalf("parseArgs error = %v", err)
+	_, err = parseArgs([]string{"--validate", "--concurrency", "3"})
+	if err == nil {
+		t.Fatalf("expected error for removed legacy --validate")
 	}
-	if string(got.Action) != "validate" {
-		t.Fatalf("action = %q, want validate", got.Action)
-	}
-	if got.ValidateConcurrency != 3 {
-		t.Fatalf("validate concurrency = %d, want 3", got.ValidateConcurrency)
-	}
-	if len(got.DeprecatedWarnings) == 0 {
-		t.Fatalf("expected deprecation warnings for --validate")
+	if got := err.Error(); got == "" || !strings.Contains(got, "unknown option: --validate") {
+		t.Fatalf("unexpected error: %v", err)
 	}
 }
 
@@ -81,6 +71,24 @@ func TestParseArgsHelpDispatch(t *testing.T) {
 	}
 	if got.HelpCommand != "launch" {
 		t.Fatalf("help command = %q, want launch", got.HelpCommand)
+	}
+
+	_, err = parseArgs([]string{"help"})
+	if err == nil {
+		t.Fatalf("expected error for removed help command")
+	}
+	if got := err.Error(); got == "" || !strings.Contains(got, "unknown command: help") {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestParseValidateProviderRequiresSpaceSeparatedValue(t *testing.T) {
+	_, err := parseArgs([]string{"validate", "--provider=anthropic"})
+	if err == nil {
+		t.Fatalf("expected error for unsupported --provider=<id> form")
+	}
+	if got := err.Error(); got == "" || !strings.Contains(got, "unsupported validate option: --provider=anthropic") {
+		t.Fatalf("unexpected error: %v", err)
 	}
 }
 

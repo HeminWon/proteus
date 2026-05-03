@@ -10,8 +10,8 @@ run:
 
 # 列出 providers
 list:
-	go run ./cmd/proteus --list
+	go run ./cmd/proteus list
 
 # 校验配置
 validate:
-	go run ./cmd/proteus --validate
+	go run ./cmd/proteus validate

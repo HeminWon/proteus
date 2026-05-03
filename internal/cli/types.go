@@ -7,7 +7,6 @@ const (
 	ActionValidate CliAction = "validate"
 	ActionSwitch   CliAction = "switch"
 	ActionLaunch   CliAction = "launch"
-	ActionDoctor   CliAction = "doctor"
 	ActionHelp     CliAction = "help"
 )
 
@@ -20,5 +19,4 @@ type CliOptions struct {
 	HelpCommand         string
 	ValidateProvider    string
 	ValidateConcurrency int
-	DeprecatedWarnings  []string
 }

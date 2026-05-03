@@ -39,10 +39,10 @@ cp configs/providers.example.yaml ~/.config/proteus/providers.yaml
 
 ```bash
 proteus --help                              # 显示帮助
-proteus --list                              # 列出 provider
+proteus list                                # 列出 provider
 proteus switch <provider-name>              # 切换 provider
 proteus switch <provider-name> --dry-run    # 预览切换
-proteus --validate                          # 校验配置与连通性
+proteus validate                            # 校验配置与连通性
 ```
 
 ## 注意

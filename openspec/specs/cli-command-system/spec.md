@@ -4,17 +4,11 @@
 TBD - created by archiving change cli-optimization. Update Purpose after archive.
 ## Requirements
 ### Requirement: Unified subcommand-oriented command system
-The CLI MUST use subcommand-oriented invocation for primary actions (`list`, `validate`, `switch`, `launch`, `doctor`) and MUST support transitional compatibility routing for legacy global flags.
+The CLI MUST use subcommand-oriented invocation for primary actions (`list`, `validate`, `switch`, `launch`).
 
 #### Scenario: Use canonical list command
 - **WHEN** user runs `proteus list`
 - **THEN** the system MUST execute provider listing behavior
-- **AND** output MUST be equivalent to legacy list behavior
-
-#### Scenario: Route legacy global flag to canonical command
-- **WHEN** user runs legacy `proteus --list`
-- **THEN** the system MUST execute the same behavior as `proteus list`
-- **AND** the system MUST print a deprecation warning indicating the canonical command
 
 ### Requirement: Canonical validate command with scoped options
 The CLI MUST provide `proteus validate` as the canonical validation entrypoint and MUST allow provider-scoped and concurrency-scoped validation options.
