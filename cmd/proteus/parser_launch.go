@@ -7,6 +7,8 @@ import (
 	core "github.com/HeminWon/proteus/internal/cli"
 )
 
+var launchFlags = []string{"--dry-run", "--list", "--help", "-h"}
+
 func parseLaunchArgs(args []string) (core.CliOptions, error) {
 	dryRun := false
 	list := false
@@ -22,7 +24,7 @@ func parseLaunchArgs(args []string) (core.CliOptions, error) {
 		case isHelpFlag(arg):
 			help = true
 		case strings.HasPrefix(arg, "-"):
-			return core.CliOptions{}, fmt.Errorf("unknown launch option: %s%s", arg, core.SuggestFlag(arg, []string{"--dry-run", "--list", "--help", "-h"}))
+			return core.CliOptions{}, unknownOptionError(string(core.ActionLaunch), arg, launchFlags)
 		default:
 			positional = append(positional, arg)
 		}

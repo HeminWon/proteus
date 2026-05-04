@@ -7,6 +7,8 @@ import (
 	core "github.com/HeminWon/proteus/internal/cli"
 )
 
+var switchFlags = []string{"--dry-run", "--help", "-h"}
+
 func parseSwitchArgs(args []string) (core.CliOptions, error) {
 	dryRun := false
 	help := false
@@ -19,7 +21,7 @@ func parseSwitchArgs(args []string) (core.CliOptions, error) {
 		case isHelpFlag(arg):
 			help = true
 		case strings.HasPrefix(arg, "-"):
-			return core.CliOptions{}, fmt.Errorf("unknown switch option: %s%s", arg, core.SuggestFlag(arg, []string{"--dry-run", "--help", "-h"}))
+			return core.CliOptions{}, unknownOptionError(string(core.ActionSwitch), arg, switchFlags)
 		default:
 			positional = append(positional, arg)
 		}

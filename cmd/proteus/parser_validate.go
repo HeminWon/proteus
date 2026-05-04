@@ -8,6 +8,8 @@ import (
 	core "github.com/HeminWon/proteus/internal/cli"
 )
 
+var validateFlags = []string{"--provider", "--concurrency", "--help", "-h"}
+
 func parseValidateArgs(args []string) (core.CliOptions, error) {
 	provider := ""
 	concurrency := 5
@@ -27,7 +29,10 @@ func parseValidateArgs(args []string) (core.CliOptions, error) {
 			i++
 			provider = args[i]
 		case strings.HasPrefix(arg, "--provider="):
-			return core.CliOptions{}, fmt.Errorf("unsupported validate option: %s (use `--provider <id>`)", arg)
+			provider = strings.TrimPrefix(arg, "--provider=")
+			if provider == "" {
+				return core.CliOptions{}, fmt.Errorf("missing value for --provider")
+			}
 		case arg == "--concurrency":
 			if i+1 >= len(args) {
 				return core.CliOptions{}, fmt.Errorf("missing value for --concurrency")
@@ -39,9 +44,17 @@ func parseValidateArgs(args []string) (core.CliOptions, error) {
 			}
 			concurrency = parsed
 		case strings.HasPrefix(arg, "--concurrency="):
-			return core.CliOptions{}, fmt.Errorf("unsupported validate option: %s (use `--concurrency <n>`)", arg)
+			value := strings.TrimPrefix(arg, "--concurrency=")
+			if value == "" {
+				return core.CliOptions{}, fmt.Errorf("missing value for --concurrency")
+			}
+			parsed, err := strconv.Atoi(value)
+			if err != nil || parsed <= 0 {
+				return core.CliOptions{}, fmt.Errorf("invalid --concurrency value: %s", value)
+			}
+			concurrency = parsed
 		case strings.HasPrefix(arg, "-"):
-			return core.CliOptions{}, fmt.Errorf("unknown validate option: %s%s", arg, core.SuggestFlag(arg, []string{"--provider", "--concurrency", "--help", "-h"}))
+			return core.CliOptions{}, unknownOptionError(string(core.ActionValidate), arg, validateFlags)
 		default:
 			return core.CliOptions{}, fmt.Errorf("unexpected argument for validate: %s", arg)
 		}
