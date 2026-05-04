@@ -1,8 +1,8 @@
 # Proteus
 
-Proteus 用于快速切换 Claude Code 的 provider 配置（如 Anthropic / OpenRouter / AIClient2API）。
+Proteus is a CLI for switching Claude Code provider settings and launching profile-isolated sessions.
 
-## 安装
+## Install
 
 ### Homebrew
 
@@ -11,23 +11,23 @@ brew tap HeminWon/proteus https://github.com/HeminWon/proteus
 brew install proteus
 ```
 
-### 开发模式
+### From source
 
 ```bash
 go run ./cmd/proteus --help
 ```
 
-## 配置
+## Configuration
 
-1. 复制示例配置：
+1. Copy the example config:
 
 ```bash
 cp configs/providers.example.yaml ~/.config/proteus/providers.yaml
 ```
 
-2. 编辑 `~/.config/proteus/providers.yaml`，填入你的 provider 信息（token、base URL、models 等）。
+2. Edit `~/.config/proteus/providers.yaml` and set your provider env values.
 
-3. （可选）自定义配置目录：编辑 `~/.config/proteus/config.json`
+3. (Optional) Use a custom config directory in `~/.config/proteus/config.json`:
 
 ```json
 {
@@ -35,17 +35,27 @@ cp configs/providers.example.yaml ~/.config/proteus/providers.yaml
 }
 ```
 
-## 常用命令
+## Commands
 
 ```bash
-proteus --help                              # 显示帮助
-proteus list                                # 列出 provider
-proteus switch <provider-name>              # 切换 provider
-proteus switch <provider-name> --dry-run    # 预览切换
-proteus validate                            # 校验配置与连通性
+proteus --help
+proteus list
+proteus validate [--provider <id>] [--concurrency <n>]
+proteus switch <provider-id|provider-name> [--dry-run]
+proteus launch <profile> [--dry-run]
+proteus launch --list
 ```
 
-## 注意
+## Launch behavior
 
-- `providers.yaml` 请勿提交包含真实 token 的版本。
-- 切换时会更新 `~/.claude/settings.json` 的 `env` 和 `availableModels`。
+- `switch` writes global settings to `~/.claude/settings.json`.
+- `launch` does **not** write global settings.
+- `launch` writes profile-private settings and starts the configured runner with profile env.
+- `profile.runner` must be an executable name only (for example `claude` or `codex`).
+- Put runner flags in `profile.args` instead of `runner`.
+
+## Notes
+
+- Do not commit real tokens in `providers.yaml`.
+- If both `ANTHROPIC_AUTH_TOKEN` and `ANTHROPIC_API_KEY` are empty, authentication will fail.
+- Use `proteus <command> --help` for command-specific usage.
