@@ -130,37 +130,11 @@ jobs:
             echo "$sum"
           }
 
-          fetch_optional_sha() {
-            local arch="$1"
-            local file="checksums/proteus-v${VERSION}-${arch}.sha256"
-
-            if [ ! -f "$file" ]; then
-              echo ""
-              return 0
-            fi
-
-            local sum
-            sum="$(awk '{print $1}' "$file")"
-            if [ -z "$sum" ]; then
-              echo ""
-              return 0
-            fi
-
-            case "$sum" in
-              [0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]* ) echo "$sum" ;;
-              * )
-                echo ""
-                ;;
-            esac
-          }
-
           DARWIN_ARM64="$(fetch_sha darwin-arm64)"
-          DARWIN_X64="$(fetch_optional_sha darwin-x64)"
           LINUX_ARM64="$(fetch_sha linux-arm64)"
           LINUX_X64="$(fetch_sha linux-x64)"
 
           echo "darwin_arm64=$DARWIN_ARM64" >> "$GITHUB_OUTPUT"
-          echo "darwin_x64=$DARWIN_X64" >> "$GITHUB_OUTPUT"
           echo "linux_arm64=$LINUX_ARM64" >> "$GITHUB_OUTPUT"
           echo "linux_x64=$LINUX_X64" >> "$GITHUB_OUTPUT"
 
@@ -170,7 +144,6 @@ jobs:
           VERSION: ${{ steps.meta.outputs.version }}
           TAG: ${{ steps.meta.outputs.tag }}
           DARWIN_ARM64_SHA: ${{ steps.checksums.outputs.darwin_arm64 }}
-          DARWIN_X64_SHA: ${{ steps.checksums.outputs.darwin_x64 }}
           LINUX_ARM64_SHA: ${{ steps.checksums.outputs.linux_arm64 }}
           LINUX_X64_SHA: ${{ steps.checksums.outputs.linux_x64 }}
         run: |
@@ -186,14 +159,8 @@ jobs:
             echo '    if Hardware::CPU.arm?'
             echo "      url \"https://github.com/${REPO}/releases/download/${TAG}/proteus-v${VERSION}-darwin-arm64.tar.gz\""
             echo "      sha256 \"${DARWIN_ARM64_SHA}\""
-            if [ -n "${DARWIN_X64_SHA}" ]; then
-              echo '    else'
-              echo "      url \"https://github.com/${REPO}/releases/download/${TAG}/proteus-v${VERSION}-darwin-x64.tar.gz\""
-              echo "      sha256 \"${DARWIN_X64_SHA}\""
-            else
-              echo '    else'
-              echo '      odie "No darwin-x64 release asset is available for this version."'
-            fi
+            echo '    else'
+            echo '      odie "No darwin-x64 release asset is available for this version."'
             echo '    end'
             echo '  end'
             echo

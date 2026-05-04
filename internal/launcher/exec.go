@@ -75,7 +75,7 @@ func Resolve(config providers.ProvidersConfig, profile string) (ResolvedLaunch, 
 	}
 	runnerPath, err := exec.LookPath(runner)
 	if err != nil {
-		return ResolvedLaunch{}, fmt.Errorf("%s executable not found in PATH", runner)
+	return ResolvedLaunch{}, fmt.Errorf("%s executable not found in PATH (runner must be executable name only; move flags/arguments to profile.args)", runner)
 	}
 
 	base := environToMap(os.Environ())
