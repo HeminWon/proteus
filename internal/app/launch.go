@@ -27,6 +27,12 @@ func maskEnvValue(key, value string) string {
 func printResolvedDryRun(resolved launcher.ResolvedLaunch) {
 	fmt.Printf("Profile:  %s\n", resolved.Profile)
 	fmt.Printf("Provider: %s (%s)\n", resolved.ProviderID, resolved.ProviderName)
+	fmt.Printf("Runner:   %s\n", resolved.Runner)
+	if len(resolved.RunnerArgs) == 0 {
+		fmt.Println("Runner args: (none)")
+	} else {
+		fmt.Printf("Runner args: %s\n", strings.Join(resolved.RunnerArgs, " "))
+	}
 	fmt.Printf("Private settings: %s\n", resolved.PrivateSettingsPath)
 	fmt.Printf("CLAUDE_CONFIG_DIR: %s\n", resolved.ClaudeConfigDir)
 	if resolved.TokenSource == "" {

@@ -100,6 +100,9 @@ func validateProvidersConfigShape(config ProvidersConfig) error {
 		if strings.TrimSpace(binding.Provider) == "" {
 			return fmt.Errorf("providers.yaml is invalid: profile '%s' missing provider", profile)
 		}
+		if binding.Runner != "" && strings.TrimSpace(binding.Runner) == "" {
+			return fmt.Errorf("providers.yaml is invalid: profile '%s' runner must not be empty", profile)
+		}
 	}
 
 	return nil

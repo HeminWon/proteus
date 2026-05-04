@@ -17,7 +17,9 @@ type ResolvedLaunch struct {
 	Profile             string
 	ProviderID          string
 	ProviderName        string
-	ClaudePath          string
+	Runner              string
+	RunnerPath          string
+	RunnerArgs          []string
 	ClaudeConfigDir     string
 	PrivateSettingsPath string
 	Provider            providers.Provider
@@ -67,9 +69,13 @@ func Resolve(config providers.ProvidersConfig, profile string) (ResolvedLaunch, 
 		return ResolvedLaunch{}, fmt.Errorf("profile %q references missing provider %q. Available providers: %s", profile, binding.Provider, strings.Join(availableProviders(config), ", "))
 	}
 
-	claudePath, err := exec.LookPath("claude")
+	runner := strings.TrimSpace(binding.Runner)
+	if runner == "" {
+		runner = "claude"
+	}
+	runnerPath, err := exec.LookPath(runner)
 	if err != nil {
-		return ResolvedLaunch{}, fmt.Errorf("claude executable not found in PATH")
+		return ResolvedLaunch{}, fmt.Errorf("%s executable not found in PATH", runner)
 	}
 
 	base := environToMap(os.Environ())
@@ -124,7 +130,9 @@ func Resolve(config providers.ProvidersConfig, profile string) (ResolvedLaunch, 
 		Profile:             profile,
 		ProviderID:          provider.ID,
 		ProviderName:        provider.Name,
-		ClaudePath:          claudePath,
+		Runner:              runner,
+		RunnerPath:          runnerPath,
+		RunnerArgs:          append([]string{}, binding.Args...),
 		ClaudeConfigDir:     claudeConfigDir,
 		PrivateSettingsPath: privateSettingsPath,
 		Provider:            *provider,
@@ -163,5 +171,6 @@ func mapToEnviron(values map[string]string) []string {
 
 func ExecResolved(resolved ResolvedLaunch) error {
 	env := mapToEnviron(resolved.Env)
-	return syscall.Exec(resolved.ClaudePath, []string{"claude"}, env)
+	argv := append([]string{resolved.Runner}, resolved.RunnerArgs...)
+	return syscall.Exec(resolved.RunnerPath, argv, env)
 }

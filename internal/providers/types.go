@@ -14,7 +14,9 @@ type Provider struct {
 }
 
 type Profile struct {
-	Provider string `yaml:"provider"`
+	Provider string   `yaml:"provider"`
+	Runner   string   `yaml:"runner,omitempty"`
+	Args     []string `yaml:"args,omitempty"`
 }
 
 type ProvidersConfig struct {
