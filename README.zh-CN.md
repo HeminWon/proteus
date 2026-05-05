@@ -20,18 +20,30 @@
 
 ## 典型使用场景
 
-- **单一全局上下文**：同一时刻只需要一个 Provider/模型。使用 `switch` 快速更新全局 Claude 设置。
-- **并行工作流**：需要同时使用不同服务商的模型（例如 DeepSeek、GLM），并在多个终端并行推进任务。
+### 单一全局上下文
+- 场景：同一时刻只需要一个 Provider/模型
+- 推荐命令：`proteus switch <provider>`
+- 目标：快速更新当前全局 Claude 设置
+
+### 并行多 Provider 工作流
+- 场景：需要同时使用不同服务商的模型（例如 DeepSeek、GLM）
+- 推荐命令：`proteus launch <profile>`
+- 目标：在多个终端并行推进任务且互不干扰
   - 终端 A：`proteus launch deepseek`
   - 终端 B：`proteus launch glm`
   - 终端 C：`proteus launch anthropic`
 
 ## `switch` 与 `launch` 对比
 
-| 命令 | 是否写入全局 `~/.claude/settings.json` | 是否隔离 Profile/会话 | 适用场景 |
-| --- | --- | --- | --- |
-| `proteus switch <provider>` | 是 | 否 | 快速切换全局 Provider/模型 |
-| `proteus launch <profile>` | 否 | 是 | 并行运行多个隔离的 Claude Code 会话 |
+### `proteus switch <provider>`
+- 全局设置：会写入 `~/.claude/settings.json`
+- 隔离性：无（全局生效）
+- 适用场景：快速切换当前默认 Provider/模型
+
+### `proteus launch <profile>`
+- 全局设置：不写入全局 settings
+- 隔离性：有（Profile/会话隔离）
+- 适用场景：并行运行多个不同 Provider 的会话（如 DeepSeek / GLM / Anthropic）
 
 ## 功能特性
 
@@ -117,7 +129,8 @@ profiles:
   default:
     provider: anthropic
     runner: claude
-    args: []
+    args:
+      - --dangerously-skip-permissions
     share_claude_md: false
 ```
 

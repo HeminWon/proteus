@@ -20,18 +20,30 @@ When you need parallel workflows (for example coding + review + experiments), Pr
 
 ## Typical Scenarios
 
-- **Single global context**: You only need one provider/model at a time. Use `switch` to update global Claude settings quickly.
-- **Parallel workflows**: You need to use models from different providers (for example DeepSeek and GLM) while running tasks in parallel terminals.
+### Single global context
+- Scenario: you only need one provider/model at a time
+- Recommended command: `proteus switch <provider>`
+- Goal: quickly update current global Claude settings
+
+### Parallel multi-provider workflows
+- Scenario: you need models from different providers (for example DeepSeek and GLM)
+- Recommended command: `proteus launch <profile>`
+- Goal: run tasks in parallel terminals without interfering with each other
   - Terminal A: `proteus launch deepseek`
   - Terminal B: `proteus launch glm`
   - Terminal C: `proteus launch anthropic`
 
 ## `switch` vs `launch`
 
-| Command | Writes global `~/.claude/settings.json` | Profile/session isolation | Best for |
-| --- | --- | --- | --- |
-| `proteus switch <provider>` | Yes | No | Fast global provider/model switch |
-| `proteus launch <profile>` | No | Yes | Running multiple isolated Claude Code sessions in parallel |
+### `proteus switch <provider>`
+- Global settings: writes to `~/.claude/settings.json`
+- Isolation: none (applies globally)
+- Best for: quickly changing the current default provider/model
+
+### `proteus launch <profile>`
+- Global settings: does not write global settings
+- Isolation: yes (profile/session isolated)
+- Best for: running parallel sessions across different providers (for example DeepSeek / GLM / Anthropic)
 
 ## Features
 
@@ -117,7 +129,8 @@ profiles:
   default:
     provider: anthropic
     runner: claude
-    args: []
+    args:
+      - --dangerously-skip-permissions
     share_claude_md: false
 ```
 
