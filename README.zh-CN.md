@@ -12,27 +12,6 @@
   <a href="README.md">English Documentation</a>
 </p>
 
-## 背景
-
-`switch` 适合“同一时刻只需要一个全局 Provider/模型”的场景。
-
-当你要并行使用不同服务商的模型（例如 DeepSeek、GLM、Anthropic）时，Proteus 的 `launch` 可以同时启动多个 Claude Code 终端，并让每个终端绑定不同的 Profile、Provider 和模型预设，彼此互不覆盖运行状态。
-
-## 典型使用场景
-
-### 单一全局上下文
-- 场景：同一时刻只需要一个 Provider/模型
-- 推荐命令：`proteus switch <provider>`
-- 目标：快速更新当前全局 Claude 设置
-
-### 并行多 Provider 工作流
-- 场景：需要同时使用不同服务商的模型（例如 DeepSeek、GLM）
-- 推荐命令：`proteus launch <profile>`
-- 目标：在多个终端并行推进任务且互不干扰
-  - 终端 A：`proteus launch deepseek`
-  - 终端 B：`proteus launch glm`
-  - 终端 C：`proteus launch anthropic`
-
 ## `switch` 与 `launch` 对比
 
 ### `proteus switch <provider>`
@@ -43,14 +22,14 @@
 ### `proteus launch <profile>`
 - 全局设置：不写入全局 settings
 - 隔离性：有（Profile/会话隔离）
+- 运行方式：使用 `profile.runner` + `profile.args` 启动（`profile.runner` 必须是可执行名，如 `claude`、`codex`）
+- 默认值：`share_claude_md` 为 `false`
 - 适用场景：并行运行多个不同 Provider 的会话（如 DeepSeek / GLM / Anthropic）
 
 ## 功能特性
 
 - 在一个配置文件中管理多个 Claude 兼容 Provider。
-- 通过写入 `~/.claude/settings.json` 切换当前全局 Provider。
-- 启动 Profile 隔离会话，不污染全局设置。
-- 支持同时运行多个 Claude Code 终端，并让每个终端使用不同 Profile/Provider/模型预设。
+- 同时支持全局切换（`switch`）与 Profile 隔离并行会话（`launch`）。
 - 将共享 Claude 配置项（`commands`、`skills`、`plugins`、`agents`、`ide`）同步到 Profile 配置目录。
 - 支持带实时 HTTP 检查的配置校验。
 
@@ -77,27 +56,27 @@ go build -o dist/proteus ./cmd/proteus
 
 ## 快速开始
 
-1. 创建 Provider 配置文件：
+1. 创建配置：
 
 ```bash
 cp configs/providers.example.yaml ~/.config/proteus/providers.yaml
 ```
 
-2. 编辑 `~/.config/proteus/providers.yaml`，填入你的 token/env。
+2. 在 `~/.config/proteus/providers.yaml` 填入 token/env。
 
-3. 校验配置：
+3. 校验：
 
 ```bash
 proteus validate
 ```
 
-4. 全局切换 Provider：
+4. 全局切换：
 
 ```bash
 proteus switch anthropic
 ```
 
-5. 启动隔离 Profile 会话：
+5. 隔离启动：
 
 ```bash
 proteus launch default
@@ -160,13 +139,6 @@ proteus switch <provider-id|provider-name> [--dry-run]
 proteus launch <profile> [--dry-run]
 proteus launch --list
 ```
-
-## 行为说明
-
-- `switch` 会将 Provider env 持久化到全局 `~/.claude/settings.json`。
-- `launch` 不写全局设置；会写入 Profile 私有 settings，并用 `profile.runner` + `profile.args` 启动进程。
-- `profile.runner` 必须是可执行文件名（例如 `claude`、`codex`）。
-- `share_claude_md` 默认值为 `false`。
 
 ## 安全提示
 

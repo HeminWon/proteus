@@ -150,12 +150,32 @@ func TestPlanProfileConfigSyncConflictsOnUnexpectedDestinationKinds(t *testing.T
 				t.Fatalf("skills status = %s, want %s", st, SyncStatusConflict)
 			}
 
-			err = ApplyProfileConfigSync(entries, profileDir)
-			if err == nil {
-				t.Fatalf("expected apply conflict error")
+			if err := ApplyProfileConfigSync(entries, profileDir); err != nil {
+				t.Fatalf("ApplyProfileConfigSync error = %v", err)
 			}
-			if got := err.Error(); !strings.Contains(got, conflict) {
-				t.Fatalf("error = %q, want contains %q", got, conflict)
+
+			info, err := os.Lstat(conflict)
+			if err != nil {
+				t.Fatalf("lstat conflict path: %v", err)
+			}
+			if info.Mode()&os.ModeSymlink == 0 {
+				t.Fatalf("conflict path is not symlink after apply")
+			}
+			matches, err := symlinkPointsTo(conflict, source)
+			if err != nil {
+				t.Fatalf("symlinkPointsTo: %v", err)
+			}
+			if !matches {
+				t.Fatalf("conflict path symlink target mismatch")
+			}
+
+			backupPattern := conflict + ".backup.*"
+			backups, err := filepath.Glob(backupPattern)
+			if err != nil {
+				t.Fatalf("glob backups: %v", err)
+			}
+			if len(backups) != 1 {
+				t.Fatalf("backup files = %d, want 1", len(backups))
 			}
 		})
 	}

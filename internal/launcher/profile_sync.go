@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 type ProfileSyncStatus string
@@ -118,9 +119,7 @@ func ApplyProfileConfigSync(entries []ProfileSyncEntry, profileConfigDir string)
 
 	for _, entry := range entries {
 		switch entry.Status {
-		case SyncStatusConflict:
-			return fmt.Errorf("profile sync conflict at %s: expected symlink to %s", entry.TargetPath, entry.SourcePath)
-		case SyncStatusLinked:
+		case SyncStatusConflict, SyncStatusLinked:
 			if err := ensureExpectedSymlink(entry.SourcePath, entry.TargetPath); err != nil {
 				return err
 			}
@@ -159,7 +158,23 @@ func ensureExpectedSymlink(sourcePath, targetPath string) error {
 		}
 	}
 
-	return fmt.Errorf("profile sync conflict at %s: expected symlink to %s", targetPath, sourcePath)
+	if err := backupExistingPath(targetPath); err != nil {
+		return err
+	}
+	return os.Symlink(sourcePath, targetPath)
+}
+
+func backupExistingPath(path string) error {
+	stamp := time.Now().Format("20060102-150405")
+	backupPath := fmt.Sprintf("%s.backup.%s", path, stamp)
+	for i := 1; ; i++ {
+		if exists, err := pathExists(backupPath); err != nil {
+			return err
+		} else if !exists {
+			return os.Rename(path, backupPath)
+		}
+		backupPath = fmt.Sprintf("%s.backup.%s-%d", path, stamp, i)
+	}
 }
 
 func symlinkPointsTo(linkPath, expectedTarget string) (bool, error) {

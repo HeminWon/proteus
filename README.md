@@ -12,27 +12,6 @@
   <a href="README.zh-CN.md">中文文档</a>
 </p>
 
-## Background
-
-`switch` is useful when you only need one global provider/model at a time.
-
-When you need to use models from different providers in parallel (for example DeepSeek, GLM, and Anthropic), Proteus `launch` lets you run multiple Claude Code terminals simultaneously with different profiles, providers, and model presets, without overwriting each other's runtime state.
-
-## Typical Scenarios
-
-### Single global context
-- Scenario: you only need one provider/model at a time
-- Recommended command: `proteus switch <provider>`
-- Goal: quickly update current global Claude settings
-
-### Parallel multi-provider workflows
-- Scenario: you need models from different providers (for example DeepSeek and GLM)
-- Recommended command: `proteus launch <profile>`
-- Goal: run tasks in parallel terminals without interfering with each other
-  - Terminal A: `proteus launch deepseek`
-  - Terminal B: `proteus launch glm`
-  - Terminal C: `proteus launch anthropic`
-
 ## `switch` vs `launch`
 
 ### `proteus switch <provider>`
@@ -43,14 +22,14 @@ When you need to use models from different providers in parallel (for example De
 ### `proteus launch <profile>`
 - Global settings: does not write global settings
 - Isolation: yes (profile/session isolated)
+- Runner: starts `profile.runner` with `profile.args` (`profile.runner` must be executable, for example `claude` or `codex`)
+- Default: `share_claude_md` is `false`
 - Best for: running parallel sessions across different providers (for example DeepSeek / GLM / Anthropic)
 
 ## Features
 
 - Manage multiple Claude-compatible providers in one config file.
-- Switch active provider by writing `~/.claude/settings.json`.
-- Launch profile-isolated sessions without mutating global settings.
-- Run multiple Claude Code terminals in parallel, each with different profiles/providers/model presets.
+- Support both global switching (`switch`) and profile-isolated parallel sessions (`launch`).
 - Sync shared Claude config entries (`commands`, `skills`, `plugins`, `agents`, `ide`) into profile config dir.
 - Validate provider configuration with live HTTP checks.
 
@@ -77,27 +56,27 @@ go build -o dist/proteus ./cmd/proteus
 
 ## Quick Start
 
-1. Create your provider config:
+1. Create config:
 
 ```bash
 cp configs/providers.example.yaml ~/.config/proteus/providers.yaml
 ```
 
-2. Edit `~/.config/proteus/providers.yaml` and fill your token/env values.
+2. Fill token/env in `~/.config/proteus/providers.yaml`.
 
-3. Validate configuration:
+3. Validate:
 
 ```bash
 proteus validate
 ```
 
-4. Switch provider globally:
+4. Global switch:
 
 ```bash
 proteus switch anthropic
 ```
 
-5. Launch an isolated profile session:
+5. Isolated launch:
 
 ```bash
 proteus launch default
@@ -160,13 +139,6 @@ proteus switch <provider-id|provider-name> [--dry-run]
 proteus launch <profile> [--dry-run]
 proteus launch --list
 ```
-
-## Behavior Notes
-
-- `switch` persists provider env into global `~/.claude/settings.json`.
-- `launch` does not write global settings; it writes profile-private settings and starts `profile.runner` with `profile.args`.
-- `profile.runner` must be an executable name (for example `claude` or `codex`).
-- `share_claude_md` is `false` by default.
 
 ## Security Notes
 
