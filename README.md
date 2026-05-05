@@ -16,7 +16,7 @@
 
 `switch` is useful when you only need one global provider/model at a time.
 
-When you need parallel workflows (for example coding + review + experiments), Proteus `launch` lets you run multiple Claude Code terminals simultaneously with different profiles, providers, and model presets, without overwriting each other's runtime state.
+When you need to use models from different providers in parallel (for example DeepSeek, GLM, and Anthropic), Proteus `launch` lets you run multiple Claude Code terminals simultaneously with different profiles, providers, and model presets, without overwriting each other's runtime state.
 
 ## Typical Scenarios
 

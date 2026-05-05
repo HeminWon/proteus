@@ -16,7 +16,7 @@
 
 `switch` 适合“同一时刻只需要一个全局 Provider/模型”的场景。
 
-当你要并行处理多条工作流（例如开发、评审、实验）时，Proteus 的 `launch` 可以同时启动多个 Claude Code 终端，并让每个终端绑定不同的 Profile、Provider 和模型预设，彼此互不覆盖运行状态。
+当你要并行使用不同服务商的模型（例如 DeepSeek、GLM、Anthropic）时，Proteus 的 `launch` 可以同时启动多个 Claude Code 终端，并让每个终端绑定不同的 Profile、Provider 和模型预设，彼此互不覆盖运行状态。
 
 ## 典型使用场景
 
