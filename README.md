@@ -1,8 +1,31 @@
-# Proteus
+<p align="center">
+  <img src="assets/logo.png" alt="Proteus logo" width="180" />
+</p>
 
-Proteus is a CLI for switching Claude Code provider settings and launching profile-isolated sessions.
+<h1 align="center">Proteus</h1>
 
-## Install
+<p align="center">
+  A Go CLI to switch Claude Code providers and launch profile-isolated sessions.
+</p>
+
+<p align="center">
+  <a href="README.zh-CN.md">中文文档</a>
+</p>
+
+## Features
+
+- Manage multiple Claude-compatible providers in one config file.
+- Switch active provider by writing `~/.claude/settings.json`.
+- Launch profile-isolated sessions without mutating global settings.
+- Sync shared Claude config entries (`commands`, `skills`, `plugins`, `agents`, `ide`) into profile config dir.
+- Validate provider configuration with live HTTP checks.
+
+## Requirements
+
+- Go `1.22+` (for building/running from source)
+- Claude Code installed if you use `launch` with `runner: claude`
+
+## Installation
 
 ### Homebrew
 
@@ -11,23 +34,80 @@ brew tap HeminWon/proteus https://github.com/HeminWon/proteus
 brew install proteus
 ```
 
-### From source
+### Build from source
 
 ```bash
-go run ./cmd/proteus --help
+go build -o dist/proteus ./cmd/proteus
+./dist/proteus --help
 ```
 
-## Configuration
+## Quick Start
 
-1. Copy the example config:
+1. Create your provider config:
 
 ```bash
 cp configs/providers.example.yaml ~/.config/proteus/providers.yaml
 ```
 
-2. Edit `~/.config/proteus/providers.yaml` and set your provider env values.
+2. Edit `~/.config/proteus/providers.yaml` and fill your token/env values.
 
-3. (Optional) Use a custom config directory in `~/.config/proteus/config.json`:
+3. Validate configuration:
+
+```bash
+proteus validate
+```
+
+4. Switch provider globally:
+
+```bash
+proteus switch anthropic
+```
+
+5. Launch an isolated profile session:
+
+```bash
+proteus launch default
+```
+
+## Configuration
+
+### Providers file
+
+Default path:
+
+```text
+~/.config/proteus/providers.yaml
+```
+
+Minimal example:
+
+```yaml
+version: 1
+providers:
+  - id: anthropic
+    name: Anthropic Official
+    claude:
+      env:
+        ANTHROPIC_AUTH_TOKEN: "change-me"
+        ANTHROPIC_BASE_URL: "https://api.anthropic.com"
+
+profiles:
+  default:
+    provider: anthropic
+    runner: claude
+    args: []
+    share_claude_md: false
+```
+
+### Optional config directory override
+
+File:
+
+```text
+~/.config/proteus/config.json
+```
+
+Content:
 
 ```json
 {
@@ -46,18 +126,41 @@ proteus launch <profile> [--dry-run]
 proteus launch --list
 ```
 
-## Launch behavior
+## Behavior Notes
 
-- `switch` writes global settings to `~/.claude/settings.json`.
-- `launch` does **not** write global settings.
-- `launch` writes profile-private settings and starts the configured runner with profile env.
-- `launch` syncs shared config entries (`commands/`, `skills/`, `plugins/`, `agents/`, `ide/`) into profile `CLAUDE_CONFIG_DIR` via symlink when source exists.
-- `profile.share_claude_md` controls whether `~/.claude/CLAUDE.md` is shared into that profile (`false` by default).
-- `profile.runner` must be an executable name only (for example `claude` or `codex`).
-- Put runner flags in `profile.args` instead of `runner`.
+- `switch` persists provider env into global `~/.claude/settings.json`.
+- `launch` does not write global settings; it writes profile-private settings and starts `profile.runner` with `profile.args`.
+- `profile.runner` must be an executable name (for example `claude` or `codex`).
+- `share_claude_md` is `false` by default.
 
-## Notes
+## Security Notes
 
-- Do not commit real tokens in `providers.yaml`.
+- Never commit real tokens in `providers.yaml`.
 - If both `ANTHROPIC_AUTH_TOKEN` and `ANTHROPIC_API_KEY` are empty, authentication will fail.
-- Use `proteus <command> --help` for command-specific usage.
+
+## Development
+
+```bash
+go test ./...
+```
+
+Or use `just` tasks:
+
+```bash
+just build
+just run
+just list
+just validate
+```
+
+## Contributing
+
+Contributions are welcome. Please open an issue or pull request with:
+
+- a clear problem statement,
+- reproducible steps (for bug reports),
+- and expected behavior.
+
+## License
+
+No `LICENSE` file is currently present in this repository. Add one (for example MIT/Apache-2.0) before broad open-source redistribution.
