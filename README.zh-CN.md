@@ -12,14 +12,18 @@
   <a href="README.md">English Documentation</a>
 </p>
 
-## `switch` 与 `launch` 对比
+## 使用场景
 
-### `proteus switch <provider>`
+### 1. 全局切换
+
+- 运行方式：`proteus switch <provider>`
 - 全局设置：会写入 `~/.claude/settings.json`
 - 隔离性：无（全局生效）
 - 适用场景：快速切换当前默认 Provider/模型
 
-### `proteus launch <profile>`
+### 2. 隔离启动
+
+- 运行方式：`proteus launch <profile>`
 - 全局设置：不写入全局 settings
 - 隔离性：有（Profile/会话隔离）
 - 运行方式：使用 `profile.runner` + `profile.args` 启动（`profile.runner` 必须是可执行名，如 `claude`、`codex`）

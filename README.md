@@ -12,14 +12,18 @@
   <a href="README.zh-CN.md">中文文档</a>
 </p>
 
-## `switch` vs `launch`
+## Usage Scenarios
 
-### `proteus switch <provider>`
+### 1. Global Switching
+
+- Command: `proteus switch <provider>`
 - Global settings: writes to `~/.claude/settings.json`
 - Isolation: none (applies globally)
 - Best for: quickly changing the current default provider/model
 
-### `proteus launch <profile>`
+### 2. Isolated Launch
+
+- Command: `proteus launch <profile>`
 - Global settings: does not write global settings
 - Isolation: yes (profile/session isolated)
 - Runner: starts `profile.runner` with `profile.args` (`profile.runner` must be executable, for example `claude` or `codex`)
