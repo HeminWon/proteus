@@ -12,11 +12,33 @@
   <a href="README.zh-CN.md">中文文档</a>
 </p>
 
+## Background
+
+`switch` is useful when you only need one global provider/model at a time.
+
+When you need parallel workflows (for example coding + review + experiments), Proteus `launch` lets you run multiple Claude Code terminals simultaneously with different profiles, providers, and model presets, without overwriting each other's runtime state.
+
+## Typical Scenarios
+
+- **Single global context**: You only need one provider/model at a time. Use `switch` to update global Claude settings quickly.
+- **Parallel workflows**: You need to use models from different providers (for example DeepSeek and GLM) while running tasks in parallel terminals.
+  - Terminal A: `proteus launch deepseek`
+  - Terminal B: `proteus launch glm`
+  - Terminal C: `proteus launch anthropic`
+
+## `switch` vs `launch`
+
+| Command | Writes global `~/.claude/settings.json` | Profile/session isolation | Best for |
+| --- | --- | --- | --- |
+| `proteus switch <provider>` | Yes | No | Fast global provider/model switch |
+| `proteus launch <profile>` | No | Yes | Running multiple isolated Claude Code sessions in parallel |
+
 ## Features
 
 - Manage multiple Claude-compatible providers in one config file.
 - Switch active provider by writing `~/.claude/settings.json`.
 - Launch profile-isolated sessions without mutating global settings.
+- Run multiple Claude Code terminals in parallel, each with different profiles/providers/model presets.
 - Sync shared Claude config entries (`commands`, `skills`, `plugins`, `agents`, `ide`) into profile config dir.
 - Validate provider configuration with live HTTP checks.
 
@@ -163,4 +185,4 @@ Contributions are welcome. Please open an issue or pull request with:
 
 ## License
 
-No `LICENSE` file is currently present in this repository. Add one (for example MIT/Apache-2.0) before broad open-source redistribution.
+This project is licensed under the [MIT License](LICENSE).

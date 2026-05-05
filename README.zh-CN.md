@@ -12,11 +12,33 @@
   <a href="README.md">English Documentation</a>
 </p>
 
+## 背景
+
+`switch` 适合“同一时刻只需要一个全局 Provider/模型”的场景。
+
+当你要并行处理多条工作流（例如开发、评审、实验）时，Proteus 的 `launch` 可以同时启动多个 Claude Code 终端，并让每个终端绑定不同的 Profile、Provider 和模型预设，彼此互不覆盖运行状态。
+
+## 典型使用场景
+
+- **单一全局上下文**：同一时刻只需要一个 Provider/模型。使用 `switch` 快速更新全局 Claude 设置。
+- **并行工作流**：需要同时使用不同服务商的模型（例如 DeepSeek、GLM），并在多个终端并行推进任务。
+  - 终端 A：`proteus launch deepseek`
+  - 终端 B：`proteus launch glm`
+  - 终端 C：`proteus launch anthropic`
+
+## `switch` 与 `launch` 对比
+
+| 命令 | 是否写入全局 `~/.claude/settings.json` | 是否隔离 Profile/会话 | 适用场景 |
+| --- | --- | --- | --- |
+| `proteus switch <provider>` | 是 | 否 | 快速切换全局 Provider/模型 |
+| `proteus launch <profile>` | 否 | 是 | 并行运行多个隔离的 Claude Code 会话 |
+
 ## 功能特性
 
 - 在一个配置文件中管理多个 Claude 兼容 Provider。
 - 通过写入 `~/.claude/settings.json` 切换当前全局 Provider。
 - 启动 Profile 隔离会话，不污染全局设置。
+- 支持同时运行多个 Claude Code 终端，并让每个终端使用不同 Profile/Provider/模型预设。
 - 将共享 Claude 配置项（`commands`、`skills`、`plugins`、`agents`、`ide`）同步到 Profile 配置目录。
 - 支持带实时 HTTP 检查的配置校验。
 
@@ -163,4 +185,4 @@ just validate
 
 ## 许可证
 
-当前仓库尚未包含 `LICENSE` 文件。若计划面向开源社区分发，建议补充许可证（如 MIT/Apache-2.0）。
+本项目基于 [MIT License](LICENSE) 开源。
