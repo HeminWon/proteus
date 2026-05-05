@@ -34,7 +34,8 @@ var helpDocs = map[string]helpDoc{
 		usage: []string{"proteus launch <profile> [--dry-run]", "proteus launch --list"},
 		description: []string{
 			"Start claude with profile env in current process (no global file writes)",
-			"Note: launch writes profile-private settings, not global settings files",
+			"Note: launch writes profile-private settings and syncs shared config entries into profile directory",
+			"Set profile.share_claude_md=true to share ~/.claude/CLAUDE.md with that profile",
 		},
 		options: []string{
 			"--list           List launch profiles",

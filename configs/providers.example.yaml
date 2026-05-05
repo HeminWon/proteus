@@ -19,3 +19,10 @@ providers:
         ANTHROPIC_BASE_URL: "https://openrouter.ai/api/anthropic"
       models:
         - "claude-3-7-sonnet"
+
+profiles:
+  default:
+    provider: anthropic
+    runner: claude
+    args: []
+    share_claude_md: false

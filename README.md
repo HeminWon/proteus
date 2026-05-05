@@ -51,6 +51,8 @@ proteus launch --list
 - `switch` writes global settings to `~/.claude/settings.json`.
 - `launch` does **not** write global settings.
 - `launch` writes profile-private settings and starts the configured runner with profile env.
+- `launch` syncs shared config entries (`commands/`, `skills/`, `plugins/`, `agents/`, `ide/`) into profile `CLAUDE_CONFIG_DIR` via symlink when source exists.
+- `profile.share_claude_md` controls whether `~/.claude/CLAUDE.md` is shared into that profile (`false` by default).
 - `profile.runner` must be an executable name only (for example `claude` or `codex`).
 - Put runner flags in `profile.args` instead of `runner`.
 

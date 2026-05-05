@@ -44,6 +44,14 @@ func printResolvedDryRun(resolved launcher.ResolvedLaunch) {
 	for _, key := range resolved.ProviderEnvKeys {
 		fmt.Printf("  %-20s = %s\n", key, maskEnvValue(key, resolved.Env[key]))
 	}
+
+	fmt.Println()
+	fmt.Println("Profile config sync:")
+	for _, entry := range resolved.ProfileSyncEntries {
+		fmt.Printf("  %-10s %-17s %s -> %s\n", entry.Status, entry.Name, entry.SourcePath, entry.TargetPath)
+	}
+	fmt.Println("  note: runtime state remains isolated (only fixed whitelist entries are considered)")
+
 	for _, w := range resolved.Warnings {
 		fmt.Println(w)
 	}
@@ -105,6 +113,10 @@ func LaunchProfile(profile string, dryRun bool, list bool) error {
 	if dryRun {
 		printResolvedDryRun(resolved)
 		return nil
+	}
+
+	if err := launcher.ApplyProfileConfigSync(resolved.ProfileSyncEntries, resolved.ClaudeConfigDir); err != nil {
+		return err
 	}
 
 	if err := store.WriteSettingsAt(resolved.PrivateSettingsPath, nextSettings); err != nil {

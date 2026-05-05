@@ -28,6 +28,7 @@ type ResolvedLaunch struct {
 	TokenSource         string
 	Warnings            []string
 	CriticalWarns       []string
+	ProfileSyncEntries  []ProfileSyncEntry
 }
 
 func findProviderByID(config providers.ProvidersConfig, id string) *providers.Provider {
@@ -75,7 +76,7 @@ func Resolve(config providers.ProvidersConfig, profile string) (ResolvedLaunch, 
 	}
 	runnerPath, err := exec.LookPath(runner)
 	if err != nil {
-	return ResolvedLaunch{}, fmt.Errorf("%s executable not found in PATH (runner must be executable name only; move flags/arguments to profile.args)", runner)
+		return ResolvedLaunch{}, fmt.Errorf("%s executable not found in PATH (runner must be executable name only; move flags/arguments to profile.args)", runner)
 	}
 
 	base := environToMap(os.Environ())
@@ -125,6 +126,19 @@ func Resolve(config providers.ProvidersConfig, profile string) (ResolvedLaunch, 
 	privateSettingsPath := store.LaunchProfileSettingsPath(profile)
 	base["CLAUDE_CONFIG_DIR"] = claudeConfigDir
 
+	profileSyncEntries, err := PlanProfileConfigSync(claudeConfigDir, binding.ShareClaudeMD)
+	if err != nil {
+		return ResolvedLaunch{}, err
+	}
+	for _, entry := range profileSyncEntries {
+		switch entry.Status {
+		case SyncStatusSkippedMissing:
+			warnings = append(warnings, fmt.Sprintf("WARN: shared source missing for %s at %s", entry.Name, entry.SourcePath))
+		case SyncStatusDisabledExisting:
+			warnings = append(warnings, fmt.Sprintf("WARN: CLAUDE.md sharing disabled but existing target retained at %s", entry.TargetPath))
+		}
+	}
+
 	sort.Strings(providerKeys)
 	return ResolvedLaunch{
 		Profile:             profile,
@@ -141,6 +155,7 @@ func Resolve(config providers.ProvidersConfig, profile string) (ResolvedLaunch, 
 		TokenSource:         tokenSource,
 		Warnings:            warnings,
 		CriticalWarns:       critical,
+		ProfileSyncEntries:  profileSyncEntries,
 	}, nil
 }
 
